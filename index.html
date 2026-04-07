@@ -406,7 +406,7 @@ async function go() {
   stEl.textContent = '正在生成文案，请稍候…';
 
   try {
-    const res = await fetch('/api/chat', {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyCv3ak255Kykjz9ibmACdzLFPk3Q_L4BLk`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1200, system: SYS, messages: hist })
