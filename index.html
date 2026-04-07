@@ -233,6 +233,15 @@ textarea::placeholder { color: var(--text-3); }
 }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+.bbl h1,.bbl h2,.bbl h3,.bbl h4{font-size:14px;font-weight:600;margin:12px 0 4px;color:var(--text-1)}
+.bbl p{margin:4px 0;line-height:1.7}
+.bbl ul,.bbl ol{padding-left:18px;margin:6px 0}
+.bbl li{margin:3px 0;line-height:1.65}
+.bbl hr{border:none;border-top:1px solid var(--border);margin:12px 0}
+.bbl strong{font-weight:600}
+.bbl blockquote{border-left:3px solid var(--accent);padding-left:10px;color:var(--text-2);margin:8px 0}
+</style>
 </head>
 <body>
 
@@ -387,9 +396,15 @@ function addMsg(role, text, typing, imgSrc) {
       img.src = imgSrc; img.className = 'msg-img';
       bbl.appendChild(img);
     }
-    const t = document.createElement('span');
-    t.textContent = text;
-    bbl.appendChild(t);
+    if (role === 'user') {
+      const t = document.createElement('span');
+      t.textContent = text;
+      bbl.appendChild(t);
+    } else {
+      const d = document.createElement('div');
+      d.innerHTML = (typeof marked !== 'undefined') ? marked.parse(text) : text.replace(/\n/g, '<br>');
+      bbl.appendChild(d);
+    }
   }
   wrap.appendChild(av); wrap.appendChild(bbl);
   msgsEl.appendChild(wrap);
@@ -467,12 +482,22 @@ async function go() {
   parts.push({ text: `${MODE_PROMPTS[mode]}\n\n用户需求：${displayText}` });
   removeImg();
 
-  const geminiContents = hist.map(m => {
+  // Build conversation history for Gemini (exclude system prompt injections, keep it clean)
+  const geminiContents = [];
+  for (const m of hist) {
+    const role = m.role === 'assistant' ? 'model' : 'user';
+    let parts;
     if (Array.isArray(m.content)) {
-      return { role: m.role === 'assistant' ? 'model' : 'user', parts: m.content.map(c => c.type === 'text' ? { text: c.text } : { inlineData: { mimeType: c.source?.media_type, data: c.source?.data } }) };
+      parts = m.content.map(c => {
+        if (c.type === 'text') return { text: c.text };
+        if (c.type === 'image') return { inlineData: { mimeType: c.source?.media_type, data: c.source?.data } };
+        return { text: '' };
+      }).filter(p => p.text !== '' || p.inlineData);
+    } else {
+      parts = [{ text: String(m.content || '') }];
     }
-    return { role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] };
-  });
+    if (parts.length > 0) geminiContents.push({ role, parts });
+  }
 
   hist.push({ role: 'user', content: parts.map(p => p.text ? { type: 'text', text: p.text } : { type: 'image', source: { type: 'base64', media_type: p.inlineData?.mimeType, data: p.inlineData?.data } }) });
   addMsg('ai', '', true);
