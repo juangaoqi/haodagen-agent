@@ -623,9 +623,9 @@ async function generateImage(prompt, refImage) {
     const data = await res.json();
     rmTyping();
     if (!res.ok) throw new Error(data.error?.message || '生成失败');
-    const parts = data.candidates?.[0]?.content?.parts || [];
-    const imgPart = parts.find(p => p.inlineData);
-    const textPart = parts.find(p => p.text);
+    const resParts = data.candidates?.[0]?.content?.parts || [];
+    const imgPart = resParts.find(p => p.inlineData);
+    const textPart = resParts.find(p => p.text);
     if (imgPart) {
       const wrap = document.createElement('div'); wrap.className = 'msg';
       const av = document.createElement('div'); av.className = 'av ai'; av.textContent = '大根';
