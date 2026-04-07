@@ -1,0 +1,6 @@
+{
+  "name": "haodagen-agent",
+  "version": "1.0.0",
+  "description": "豪大根内容创作 Agent",
+  "engines": { "node": ">=18" }
+}
