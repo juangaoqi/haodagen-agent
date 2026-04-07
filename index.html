@@ -258,6 +258,9 @@ textarea::placeholder { color: var(--text-3); }
     <div style="font-size:11px;color:var(--text-3);margin-bottom:4px;">Gemini API Key</div>
     <input type="password" id="gkey" placeholder="AIza..." style="width:100%;border:none;background:transparent;font-size:12px;color:var(--text-1);outline:none;" oninput="localStorage.setItem('gkey',this.value)" />
   </div>
+  <a href="/admin.html" target="_blank" style="display:flex;align-items:center;gap:8px;margin:8px 12px 0;padding:8px 10px;border-radius:8px;border:1px solid var(--border);color:var(--text-2);font-size:12px;text-decoration:none;background:var(--bg);transition:all .15s" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-2)'">
+    <span>🖼️</span> 管理产品图库
+  </a>
   <button class="new-chat-btn" onclick="newChat()">
     <span class="plus">+</span> 新建对话
   </button>
@@ -320,6 +323,32 @@ const stEl   = document.getElementById('status-bar');
 const histEl = document.getElementById('hist-list');
 
 function getKey() { return localStorage.getItem('gkey') || ''; }
+
+// Image library helpers
+function getGHConfig() {
+  return {
+    user: localStorage.getItem('gh_user') || '',
+    repo: localStorage.getItem('gh_repo') || '',
+    token: localStorage.getItem('gh_token') || ''
+  };
+}
+
+async function fetchRefImage(productName) {
+  const {user, repo} = getGHConfig();
+  if (!user || !repo) return null;
+  const safeName = productName.replace(/[\/\\:*?"<>|]/g, '_');
+  const url = `https://raw.githubusercontent.com/${user}/${repo}/main/images/${safeName}.jpg`;
+  try {
+    const r = await fetch(url);
+    if (!r.ok) return null;
+    const blob = await r.blob();
+    return new Promise(res => {
+      const reader = new FileReader();
+      reader.onload = e => res({ data: e.target.result.split(',')[1], mimeType: blob.type || 'image/jpeg' });
+      reader.readAsDataURL(blob);
+    });
+  } catch { return null; }
+}
 let mode = 'xhs';
 let hist = [];          // current conversation
 let imgB64 = null;      // current image base64
@@ -570,17 +599,24 @@ function addMsg(role, text, typing, imgSrc) {
 function rmTyping() { const t = document.getElementById('typing-msg'); if (t) t.remove(); }
 
 // ── Send ──────────────────────────────────────────────────────────────
-async function generateImage(prompt) {
+async function generateImage(prompt, refImage) {
   const key = getKey();
   if (!key) { addMsg('ai', '请先填入 Gemini API Key'); return; }
   addMsg('ai', '', true);
-  stEl.textContent = '正在生成图片，请稍候（约10-20秒）…';
+  stEl.textContent = refImage ? '找到参考图，正在生成相似产品图（约15秒）…' : '正在生成图片（约15秒）…';
   try {
+    const parts = [];
+    if (refImage) {
+      parts.push({ inlineData: { mimeType: refImage.mimeType, data: refImage.data } });
+      parts.push({ text: `请参考这张图片的风格、光线、构图和色调，生成一张相似但不完全相同的新产品图。要求：${prompt}。保持食品摄影的专业感，画面有食欲感，但图片内容要有创意变化，不要完全复制。` });
+    } else {
+      parts.push({ text: `生成一张专业食品摄影风格的产品图。要求：${prompt}。风格：温暖光线，干净背景，有食欲感，专业摄影质感。` });
+    }
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${key}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        contents: [{ role: 'user', parts }],
         generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
       })
     });
@@ -627,8 +663,18 @@ async function go() {
   addMsg('user', displayText, false, previewSrc);
 
   if (mode === 'img') {
-    const imgPrompt = `Create a professional food photography image for a Chinese food brand called 豪大根 (Haodagen). ${displayText}. Style: appetizing, warm lighting, professional product photography, clean background, high quality.`;
-    await generateImage(imgPrompt);
+    // Try to find a matching product reference image
+    stEl.textContent = '正在图库中查找参考图…';
+    let refImage = null;
+    const allProducts = Object.keys(window._PRODUCT_LIST || {});
+    // Find best matching product name from user input
+    const matched = allProducts.find(p => displayText.includes(p)) || 
+                    allProducts.find(p => p.includes(displayText.slice(0,4)));
+    if (matched) {
+      refImage = await fetchRefImage(matched);
+      if (refImage) stEl.textContent = `找到「${matched}」的参考图，生成中…`;
+    }
+    await generateImage(displayText, refImage);
     btnEl.disabled = false; inpEl.focus();
     return;
   }
