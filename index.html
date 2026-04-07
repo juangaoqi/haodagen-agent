@@ -269,6 +269,7 @@ textarea::placeholder { color: var(--text-3); }
       <button class="mbtn" onclick="setMode(this,'title')">🔥 爆款标题</button>
       <button class="mbtn" onclick="setMode(this,'b2b')">🤝 B端招商</button>
       <button class="mbtn" onclick="setMode(this,'free')">✏️ 自由创作</button>
+    <button class="mbtn" onclick="setMode(this,'img')">🎨 生成配图</button>
     </div>
   </div>
 
@@ -330,7 +331,8 @@ const MODE_PROMPTS = {
   pyq:   `【微信朋友圈模式】输出3个版本：①真实日常款 ②干货数据款 ③情感共鸣款。每版100字+emoji，结尾引导私信。`,
   title: `【爆款标题模式】给出：小红书标题×3、抖音标题×3、朋友圈首句×3。每个注明技巧，最后推荐最优一个并说明原因。`,
   b2b:   `【B端招商文案模式】目标：餐饮老板/摊主/档口。输出：招商标题+痛点引入+产品方案+合作优势+行动号召。语气真实有逻辑。`,
-  free:  `【自由创作模式】根据需求灵活输出，保持豪大根风格：自然真实、有逻辑有依据。`
+  free:  `【自由创作模式】根据需求灵活输出，保持豪大根风格：自然真实、有逻辑有依据。`,
+  img: `【生成配图模式】根据用户描述，生成一段详细的英文图片提示词(prompt)，专门用于豪大根产品场景图，风格：食品摄影，温暖光线，专业，有食欲感。然后调用图片生成。`
 };
 
 const SYS = `你是豪大根内容助手，专为豪大根品牌新媒体团队服务。
@@ -397,6 +399,52 @@ function addMsg(role, text, typing, imgSrc) {
 function rmTyping() { const t = document.getElementById('typing-msg'); if (t) t.remove(); }
 
 // ── Send ──────────────────────────────────────────────────────────────
+async function generateImage(prompt) {
+  const key = getKey();
+  if (!key) { addMsg('ai', '请先填入 Gemini API Key'); return; }
+  addMsg('ai', '', true);
+  stEl.textContent = '正在生成图片，请稍候（约10-20秒）…';
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${key}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
+      })
+    });
+    const data = await res.json();
+    rmTyping();
+    if (!res.ok) throw new Error(data.error?.message || '生成失败');
+    const parts = data.candidates?.[0]?.content?.parts || [];
+    const imgPart = parts.find(p => p.inlineData);
+    const textPart = parts.find(p => p.text);
+    if (imgPart) {
+      const wrap = document.createElement('div'); wrap.className = 'msg';
+      const av = document.createElement('div'); av.className = 'av ai'; av.textContent = '大根';
+      const bbl = document.createElement('div'); bbl.className = 'bbl';
+      if (textPart) { const p = document.createElement('p'); p.textContent = textPart.text; bbl.appendChild(p); }
+      const img = document.createElement('img');
+      img.src = `data:${imgPart.inlineData.mimeType};base64,${imgPart.inlineData.data}`;
+      img.style.cssText = 'max-width:100%;border-radius:10px;margin-top:8px;display:block;';
+      const dl = document.createElement('a');
+      dl.href = img.src; dl.download = 'haodagen-image.png';
+      dl.style.cssText = 'display:inline-block;margin-top:8px;font-size:12px;color:var(--accent);';
+      dl.textContent = '⬇️ 下载图片';
+      bbl.appendChild(img); bbl.appendChild(dl);
+      wrap.appendChild(av); wrap.appendChild(bbl);
+      msgsEl.appendChild(wrap); msgsEl.scrollTop = msgsEl.scrollHeight;
+    } else {
+      addMsg('ai', textPart?.text || '图片生成失败，请重新描述');
+    }
+    stEl.textContent = '';
+  } catch(e) {
+    rmTyping();
+    addMsg('ai', `生成失败：${e.message}`);
+    stEl.textContent = '';
+  }
+}
+
 async function go() {
   const text = inpEl.value.trim();
   if ((!text && !imgB64) || btnEl.disabled) return;
@@ -406,6 +454,13 @@ async function go() {
   const displayText = text || '（上传了产品图，请帮我写文案）';
   const previewSrc = imgB64 ? document.getElementById('img-preview').src : null;
   addMsg('user', displayText, false, previewSrc);
+
+  if (mode === 'img') {
+    const imgPrompt = `Create a professional food photography image for a Chinese food brand called 豪大根 (Haodagen). ${displayText}. Style: appetizing, warm lighting, professional product photography, clean background, high quality.`;
+    await generateImage(imgPrompt);
+    btnEl.disabled = false; inpEl.focus();
+    return;
+  }
 
   const parts = [];
   if (imgB64) parts.push({ inlineData: { mimeType: imgMime, data: imgB64 } });
@@ -424,13 +479,13 @@ async function go() {
   stEl.textContent = '正在生成文案，请稍候…';
 
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${getKey()}`, {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getKey()}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: SYS }] },
         contents: [...geminiContents, { role: 'user', parts }],
-        generationConfig: { maxOutputTokens: 1200, temperature: 0.9 }
+        generationConfig: { maxOutputTokens: 8000, temperature: 1, thinkingConfig: { thinkingBudget: 2048 } }
       })
     });
     if (!res.ok) {
