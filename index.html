@@ -27,7 +27,6 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 100vh; display: flex; }
 
-/* Layout */
 .sidebar {
   width: 260px; flex-shrink: 0;
   background: var(--surface);
@@ -38,7 +37,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 10
 }
 .main { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
-/* Sidebar header */
 .sb-header {
   padding: 20px 16px 14px;
   border-bottom: 1px solid var(--border);
@@ -54,7 +52,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 10
 .sb-title { font-family: 'Noto Serif SC', serif; font-size: 15px; color: var(--text-1); font-weight: 600; letter-spacing: 0.02em; }
 .sb-sub { font-size: 11px; color: var(--text-3); margin-top: 1px; }
 
-/* Sidebar new chat */
 .new-chat-btn {
   margin: 12px 12px 0;
   padding: 9px 14px;
@@ -73,7 +70,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 10
 .new-chat-btn:hover { background: var(--accent-light); border-color: rgba(232,134,74,0.3); color: var(--accent); }
 .new-chat-btn .plus { font-size: 18px; line-height: 1; }
 
-/* History */
 .hist-label {
   padding: 14px 16px 6px;
   font-size: 11px; font-weight: 500;
@@ -108,14 +104,12 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 10
 .hist-del:hover { color: #C0392B; background: #FFF0EE; }
 .hist-empty { padding: 16px 10px; font-size: 13px; color: var(--text-3); }
 
-/* Top bar */
 .topbar {
   padding: 12px 20px;
   border-bottom: 1px solid var(--border);
   background: var(--surface);
   display: flex; align-items: center; gap: 10px;
   flex-shrink: 0;
-  backdrop-filter: blur(10px);
 }
 .mode-bar { display: flex; gap: 6px; flex-wrap: wrap; }
 .mbtn {
@@ -129,7 +123,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 10
 .mbtn.on { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 2px 12px rgba(232,134,74,0.35); }
 .mbtn:hover:not(.on) { background: var(--accent-light); border-color: rgba(232,134,74,0.3); color: var(--accent); }
 
-/* Messages */
 #msgs {
   flex: 1; overflow-y: auto;
   padding: 20px; display: flex; flex-direction: column; gap: 16px;
@@ -156,16 +149,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 10
   border: 1px solid var(--border); background: var(--surface2);
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
-.bbl h3 { font-size: 14px; font-weight: 500; margin: 10px 0 4px; color: var(--text-1); }
-.bbl strong { font-weight: 500; color: var(--text-1); }
-.bbl p { margin: 6px 0; }
-.bbl ul, .bbl ol { padding-left: 18px; margin: 6px 0; }
-.bbl li { margin: 3px 0; }
-.bbl hr { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
 .msg.u .bbl { background: var(--user-bg); border-color: var(--border2); }
 .msg-img { max-width: 200px; border-radius: 10px; margin-top: 8px; display: block; border: 1px solid var(--border); }
 
-/* Typing */
 .typing { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; }
 .typing-dots { display: flex; gap: 5px; align-items: center; }
 .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); animation: pulse 1.4s infinite; }
@@ -193,13 +179,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 10
   animation: fadeThink 1.5s infinite;
 }
 
-/* Input area */
 .input-wrap { border-top: 1px solid var(--border); padding: 14px 18px; background: var(--surface); flex-shrink: 0; }
-
 .input-row { display: flex; gap: 8px; align-items: flex-end; }
 .input-left { flex: 1; display: flex; flex-direction: column; gap: 6px; }
 
-/* Image preview */
 #img-preview-wrap { display: none; position: relative; width: fit-content; }
 #img-preview { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); display: block; }
 #img-remove {
@@ -222,7 +205,6 @@ textarea {
 textarea:focus { border-color: rgba(232,134,74,0.5); box-shadow: 0 0 0 3px rgba(232,134,74,0.08); }
 textarea::placeholder { color: var(--text-3); }
 
-/* Upload button */
 .upload-btn {
   width: 44px; height: 44px; border-radius: var(--rs);
   border: 1px solid var(--border); background: var(--surface2);
@@ -232,7 +214,6 @@ textarea::placeholder { color: var(--text-3); }
 }
 .upload-btn:hover { background: var(--accent-light); border-color: rgba(232,134,74,0.3); color: var(--accent); }
 
-/* Send button */
 #send-btn {
   height: 60px; padding: 0 22px;
   border-radius: var(--rs); border: none;
@@ -247,12 +228,9 @@ textarea::placeholder { color: var(--text-3); }
 #send-btn:disabled { opacity: 0.4; cursor: default; box-shadow: none; transform: none; }
 
 #status-bar { font-size: 12px; color: var(--accent); text-align: right; padding: 6px 0 0; min-height: 20px; opacity: 0.8; }
-
 .err-bbl { border-color: #FFCDD2 !important; background: #FFF5F5 !important; color: #B71C1C !important; }
 
-@media (max-width: 640px) {
-  .sidebar { display: none; }
-}
+@media (max-width: 640px) { .sidebar { display: none; } }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <style>
@@ -270,7 +248,6 @@ textarea::placeholder { color: var(--text-3); }
 </head>
 <body>
 
-<!-- Sidebar -->
 <div class="sidebar">
   <div class="sb-header">
     <div class="logo"><span class="logo-text">🥩</span></div>
@@ -295,9 +272,7 @@ textarea::placeholder { color: var(--text-3); }
   </div>
 </div>
 
-<!-- Main -->
 <div class="main">
-  <!-- Top bar -->
   <div class="topbar">
     <div class="mode-bar">
       <button class="mbtn on" onclick="setMode(this,'xhs')">📕 小红书</button>
@@ -306,10 +281,8 @@ textarea::placeholder { color: var(--text-3); }
     </div>
   </div>
 
-  <!-- Messages -->
   <div id="msgs"></div>
 
-  <!-- Input -->
   <div class="input-wrap">
     <div class="input-row">
       <div class="input-left">
@@ -338,7 +311,6 @@ const histEl = document.getElementById('hist-list');
 
 function getKey() { return localStorage.getItem('gkey') || ''; }
 
-// Image library helpers
 function getGHConfig() {
   return {
     user: localStorage.getItem('gh_user') || '',
@@ -347,11 +319,41 @@ function getGHConfig() {
   };
 }
 
+// ── FIX #4: 自动重试，过载时等待后重试，最多3次 ──────────────────────
+async function fetchWithRetry(url, options, maxRetries = 3) {
+  for (let i = 0; i < maxRetries; i++) {
+    let res;
+    try {
+      res = await fetch(url, options);
+    } catch(e) {
+      if (i < maxRetries - 1) {
+        const wait = (i + 1) * 3000;
+        stEl.textContent = `网络错误，${wait/1000}秒后自动重试（${i+1}/${maxRetries}）…`;
+        await new Promise(r => setTimeout(r, wait));
+        continue;
+      }
+      throw e;
+    }
+    if (res.ok) return res;
+    // 克隆一份读取错误信息，因为 body 只能读一次
+    const errData = await res.json().catch(() => ({}));
+    const msg = errData.error?.message || '';
+    const isOverload = msg.toLowerCase().includes('high demand') || res.status === 503 || res.status === 429;
+    if (isOverload && i < maxRetries - 1) {
+      const wait = (i + 1) * 4000;
+      stEl.textContent = `服务繁忙，${wait/1000}秒后自动重试（${i+1}/${maxRetries}）…`;
+      await new Promise(r => setTimeout(r, wait));
+      continue;
+    }
+    throw new Error(msg || `请求失败 (${res.status})`);
+  }
+  throw new Error('多次重试后仍失败，请稍后再试');
+}
+
 async function fetchRefImage(productName) {
   const {user, repo, token} = getGHConfig();
   if (!user || !repo) return null;
   const safeName = productName.replace(/[\/\\:*?"<>|]/g, '_');
-
   try {
     const headers = token ? { Authorization: `token ${token}` } : {};
     const listRes = await fetch(`https://api.github.com/repos/${user}/${repo}/contents/images`, { headers });
@@ -375,9 +377,8 @@ async function fetchRefImage(productName) {
       }
     }
   } catch {}
-
   try {
-    const url = `https://raw.githubusercontent.com/${user}/${repo}/main/images/${safeName}.jpg`;
+    const url = `https://raw.githubusercontent.com/${getGHConfig().user}/${getGHConfig().repo}/main/images/${safeName}.jpg`;
     const r = await fetch(url);
     if (!r.ok) return null;
     const blob = await r.blob();
@@ -396,7 +397,6 @@ let imgMime = null;
 let sessions = [];
 let curSessionId = null;
 
-// ── Products & prompts ──────────────────────────────────────────────
 const PRODUCTS_FALLBACK = `100克辣椒碎｜100g/包｜批发价¥8.0
 10根装50克胡椒地道肠｜500g/10根   25包/件｜批发价¥16.0
 10根装50克原味地道肠｜500g/10根   25包/件｜批发价¥16.0
@@ -507,7 +507,7 @@ const PRODUCTS_FALLBACK = `100克辣椒碎｜100g/包｜批发价¥8.0
 豪大根台式黑胡椒香肠｜500克/10根   20包/件｜批发价¥30.0
 豪大根台式芥末香肠｜500克/10根 20包/件｜批发价¥30.0
 豪大根台式麻辣香肠｜500克/10根   20包/件｜批发价¥30.0
-豪大根台式墨鱼汁香肠｜500克/10根   20包/件｜批发价¥35.0
+豪大根台式墨鱼汁香肠｜500克/10根   20包/件｜批发价¥30.0
 豪大根台式士林大香肠｜500g/5根   20包/件｜批发价¥25.0
 豪大根台式蒜味香肠｜500克/10根   20包/件｜批发价¥30.0
 豪大根台式一口肠｜500克/包 约32-33粒   20包/件｜批发价¥32.0
@@ -555,13 +555,10 @@ const MODE_PROMPTS = {
   xhs:   `【小红书种草模式】标题含数字+emoji+痛点/悬念；开头3行要有钩子；正文有场景感。\n输出：① 3个标题版本（注明技巧）② 1篇完整正文300字内 ③ 引导私信/评论互动结尾`,
   dy:    `【抖音脚本模式】前3秒必须有钩子；口播像真人对话，节奏快；结尾明确行动引导。\n输出：① 视频分段结构 ② 完整口播稿 ③ 关键字幕+镜头提示`,
   pyq:   `【微信朋友圈模式】目标：触达微信上的餐饮老板/摊主，让他们对产品感兴趣并主动私信。\n输出3个版本，每版100字，不加奇怪表情，结尾引导私信：\n① 痛点切入款——直击餐饮老板的核心痛点（食材成本/断货/品质不稳定），用数据说话\n② 利润账单款——直接给老板算赚钱账，报批发价，算利润空间\n③ 信任建立款——供货稳定+冷链配送+免费试样，降低合作门槛\n每个版本必须包含产品名和批发价，语气自然真诚像朋友聊天。`,
-  title: `【爆款标题模式】给出：小红书标题×3、抖音标题×3、朋友圈首句×3。每个注明技巧，最后推荐最优一个并说明原因。`,
-  b2b:   `【B端招商文案模式】目标：餐饮老板/摊主/档口。输出：招商标题+痛点引入+产品方案+合作优势+行动号召。语气真实有逻辑。`,
-  free:  `【自由创作模式】根据需求灵活输出，保持豪大根风格：自然真实、有逻辑有依据。`,
-  img:   `【生成配图模式】根据用户描述，生成一段详细的英文图片提示词(prompt)，专门用于豪大根产品场景图，风格：食品摄影，温暖光线，专业，有食欲感。然后调用图片生成。`
+  img:   `【生成配图模式】根据用户描述，生成专业食品摄影风格的产品图。`
 };
 
-// ── FIX #3: SYS is now a function so it always reads the latest product list ──
+// FIX #3: SYS 改为函数，每次调用时读取最新产品列表
 function getSYS() {
   const productList = window._DYNAMIC_PRODUCTS || PRODUCTS_FALLBACK;
   return `你是豪大根内容助手，专为豪大根品牌新媒体团队服务。
@@ -573,7 +570,6 @@ function getSYS() {
 - 小红书：有emoji、有场景感、像真人分享、标题吸引眼球
 - 抖音：口语化、节奏快、有钩子、像真人说话
 - 朋友圈：自然真诚、不浮夸、有数据、像圈内人聊天
-- 生成图片：在任何模式下说"帮我配图"或"生成图片"即可触发
 
 核心卖点（写文案必须体现1-2个）：
 ① 价格优势：产品批发价已列明，可直接引用，比市场价更低
@@ -582,18 +578,15 @@ function getSYS() {
 ④ 免费试样：支持免费拿样试吃，满意再下单，零风险合作
 
 写文案时如果涉及具体产品，必须提及该产品的批发价格。
-如果用户上传了产品图片，请根据图片内容识别产品，结合品牌定位生成对应文案。
-如果用户在消息中提到"生成图片""帮我配图""来张图"等，除了文案还会自动生成产品配图。`;
+如果用户上传了产品图片，请根据图片内容识别产品，结合品牌定位生成对应文案。`;
 }
 
-// ── Mode ─────────────────────────────────────────────────────────────
 function setMode(el, m) {
   document.querySelectorAll('.mbtn').forEach(b => b.classList.remove('on'));
   el.classList.add('on');
   mode = m;
 }
 
-// ── Image handling ───────────────────────────────────────────────────
 function onImg(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -614,7 +607,6 @@ function removeImg() {
   document.getElementById('img-preview').src = '';
 }
 
-// ── Messages ──────────────────────────────────────────────────────────
 function addMsg(role, text, typing, imgSrc) {
   const wrap = document.createElement('div');
   wrap.className = `msg ${role === 'user' ? 'u' : ''}`;
@@ -664,39 +656,61 @@ function rmTyping() {
   }
 }
 
-// ── Send ──────────────────────────────────────────────────────────────
-async function generateImage(prompt, refImage) {
+// ── FIX #5: 正确的图片生成模型 + 无图库时的兜底逻辑 ─────────────────
+async function generateImage(prompt, refImage, productName) {
   const key = getKey();
   if (!key) { addMsg('ai', '请先填入 Gemini API Key'); return; }
   addMsg('ai', '', true);
-  stEl.textContent = refImage ? '找到参考图，正在生成相似产品图（约15秒）…' : '正在生成图片（约15秒）…';
+
+  // 根据是否有参考图，显示不同提示
+  if (refImage) {
+    stEl.textContent = `已找到「${productName}」参考图，AI 正在仿照风格生成（约20秒）…`;
+  } else {
+    stEl.textContent = `图库中暂无此产品图片，AI 正在根据产品名称自由发挥生成（约20秒）…`;
+  }
+
   try {
     const parts = [];
     if (refImage) {
+      // 有参考图：仿照风格生成
       parts.push({ inlineData: { mimeType: refImage.mimeType, data: refImage.data } });
-      parts.push({ text: `请参考这张图片的风格、光线、构图和色调，生成一张相似但不完全相同的新产品图。要求：${prompt}。保持食品摄影的专业感，画面有食欲感，但图片内容要有创意变化，不要完全复制。图片中不要出现任何文字、标签、logo或水印。` });
+      parts.push({ text: `请参考这张图片的风格、光线、构图和色调，生成一张相似但不完全相同的新产品图。要求：${prompt}。保持食品摄影的专业感，画面有食欲感，创意要有变化，不要完全复制原图。图片中不要出现任何文字、标签、logo或水印。` });
     } else {
-      parts.push({ text: `生成一张专业食品摄影风格的产品图。要求：${prompt}。风格：温暖光线，干净背景，有食欲感，专业摄影质感。图片中不要出现任何文字、标签、logo或水印，纯产品图。` });
+      // 无参考图：根据产品名称+描述纯AI生成
+      parts.push({ text: `生成一张专业食品摄影风格的产品图，产品是：${prompt}。要求：温暖自然光线，干净简洁背景（木板或大理石），画面有食欲感，摆盘精致，专业摄影质感，色调暖橙系。图片中不要出现任何文字、标签、logo或水印，只有食物本身。` });
     }
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${key}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ role: 'user', parts }],
-        generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
-      })
-    });
+
+    // FIX #5: 正确的图片生成模型名称
+    const res = await fetchWithRetry(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${key}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts }],
+          generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
+        })
+      }
+    );
+
     const data = await res.json();
     rmTyping();
-    if (!res.ok) throw new Error(data.error?.message || '生成失败');
     const resParts = data.candidates?.[0]?.content?.parts || [];
     const imgPart = resParts.find(p => p.inlineData);
     const textPart = resParts.find(p => p.text);
+
     if (imgPart) {
       const wrap = document.createElement('div'); wrap.className = 'msg';
       const av = document.createElement('div'); av.className = 'av ai'; av.textContent = '大根';
       const bbl = document.createElement('div'); bbl.className = 'bbl';
-      if (textPart) { const p = document.createElement('p'); p.textContent = textPart.text; bbl.appendChild(p); }
+      // 说明是有参考图还是AI自由生成
+      const note = document.createElement('p');
+      note.style.cssText = 'font-size:11px;color:var(--text-3);margin-bottom:6px;';
+      note.textContent = refImage ? `📌 参考图库「${productName}」风格生成` : '✨ 图库暂无此产品，AI 自由创作生成';
+      bbl.appendChild(note);
+      if (textPart && textPart.text && !textPart.text.startsWith('[Image')) {
+        const p = document.createElement('p'); p.textContent = textPart.text; bbl.appendChild(p);
+      }
       const img = document.createElement('img');
       img.src = `data:${imgPart.inlineData.mimeType};base64,${imgPart.inlineData.data}`;
       img.style.cssText = 'max-width:100%;border-radius:10px;margin-top:8px;display:block;';
@@ -708,12 +722,12 @@ async function generateImage(prompt, refImage) {
       wrap.appendChild(av); wrap.appendChild(bbl);
       msgsEl.appendChild(wrap); msgsEl.scrollTop = msgsEl.scrollHeight;
     } else {
-      addMsg('ai', textPart?.text || '图片生成失败，请重新描述');
+      addMsg('ai', '图片生成失败，模型未返回图片，请重试');
     }
     stEl.textContent = '';
   } catch(e) {
     rmTyping();
-    addMsg('ai', `生成失败：${e.message}`);
+    addMsg('ai', `配图生成失败：${e.message}`);
     stEl.textContent = '';
   }
 }
@@ -728,38 +742,39 @@ async function go() {
   const previewSrc = imgB64 ? document.getElementById('img-preview').src : null;
   addMsg('user', displayText, false, previewSrc);
 
-  // Auto-detect image generation request in any mode
   const imgKeywords = ['生成图片', '帮我配图', '生成配图', '来张图', '出一张图', '生成一张', '配一张图', '要图片', '生成产品图'];
   const wantsImage = mode === 'img' || imgKeywords.some(k => displayText.includes(k));
 
   if (wantsImage) {
     stEl.textContent = '正在图库中查找参考图…';
     let refImage = null;
+    let matchedProduct = null;
     const allProducts = Object.keys(window._PRODUCT_LIST || {});
-    const matched = allProducts.find(p => displayText.includes(p)) ||
-                    allProducts.find(p => p.includes(displayText.slice(0,4)));
-    if (matched) {
-      refImage = await fetchRefImage(matched);
-      if (refImage) stEl.textContent = `找到「${matched}」的参考图，生成中…`;
+    matchedProduct = allProducts.find(p => displayText.includes(p)) ||
+                     allProducts.find(p => p.includes(displayText.slice(0,4)));
+    if (matchedProduct) {
+      refImage = await fetchRefImage(matchedProduct);
     }
-    // If also wants copywriting, generate text first then image
+
     const alsoWantsCopy = mode !== 'img' && displayText.length > 10;
     if (alsoWantsCopy) {
       const copyPrompt = displayText.replace(/，?(生成图片|帮我配图|生成配图|来张图|出一张图|生成一张图?|配一张图|要图片|生成产品图)/g, '');
-      // ── FIX #2: was "copyParts", now correctly named "cpParts" throughout ──
       const cpParts = [{ text: `${MODE_PROMPTS[mode]}\n\n用户需求：${copyPrompt}` }];
       addMsg('ai', '', true);
       stEl.textContent = '正在生成文案…';
       try {
-        const copyRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getKey()}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            systemInstruction: { parts: [{ text: getSYS() }] },
-            contents: [{ role: 'user', parts: cpParts }],  // ← Fixed
-            generationConfig: { maxOutputTokens: 8000, temperature: 1, thinkingConfig: { thinkingBudget: 2048 } }
-          })
-        });
+        const copyRes = await fetchWithRetry(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getKey()}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              systemInstruction: { parts: [{ text: getSYS() }] },
+              contents: [{ role: 'user', parts: cpParts }],  // FIX #2
+              generationConfig: { maxOutputTokens: 8000, temperature: 1, thinkingConfig: { thinkingBudget: 2048 } }
+            })
+          }
+        );
         const copyData = await copyRes.json();
         rmTyping();
         const copyReply = copyData.candidates?.[0]?.content?.parts?.filter(p => !p.thought).map(p => p.text).join('') || '';
@@ -768,10 +783,11 @@ async function go() {
           hist.push({ role: 'assistant', content: copyReply });
           saveSession(displayText, copyReply);
         }
-      } catch(e) { rmTyping(); }
+      } catch(e) { rmTyping(); addMsg('ai', `文案生成失败：${e.message}`); }
     }
+
     stEl.textContent = '正在生成配图…';
-    await generateImage(displayText, refImage);
+    await generateImage(displayText, refImage, matchedProduct || displayText.slice(0, 10));
     btnEl.disabled = false; inpEl.focus();
     return;
   }
@@ -781,7 +797,6 @@ async function go() {
   parts.push({ text: `${MODE_PROMPTS[mode]}\n\n用户需求：${displayText}` });
   removeImg();
 
-  // Build conversation history for Gemini
   const geminiContents = [];
   for (const m of hist) {
     const role = m.role === 'assistant' ? 'model' : 'user';
@@ -803,26 +818,25 @@ async function go() {
   stEl.textContent = '正在生成文案，请稍候…';
 
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getKey()}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: getSYS() }] },  // ← Fixed: getSYS() not SYS
-        contents: [...geminiContents, { role: 'user', parts }],
-        generationConfig: { maxOutputTokens: 8000, temperature: 1, thinkingConfig: { thinkingBudget: 2048 } }
-      })
-    });
-    if (!res.ok) {
-      const e = await res.json().catch(() => ({}));
-      throw new Error(e.error?.message || `请求失败 (${res.status})`);
-    }
+    const res = await fetchWithRetry(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getKey()}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: getSYS() }] },  // FIX #3
+          contents: [...geminiContents, { role: 'user', parts }],
+          generationConfig: { maxOutputTokens: 8000, temperature: 1, thinkingConfig: { thinkingBudget: 2048 } }
+        })
+      }
+    );
+
     const data = await res.json();
     rmTyping();
 
     const allParts = data.candidates?.[0]?.content?.parts || [];
     const thinkingText = allParts.filter(p => p.thought === true).map(p => p.text).join('').trim();
-    // ── FIX #1: was "reply", now consistently "replyText" throughout ──
-    const replyText = allParts.filter(p => !p.thought).map(p => p.text).join('').trim() || '没有生成内容，请重试';
+    const replyText = allParts.filter(p => !p.thought).map(p => p.text).join('').trim() || '没有生成内容，请重试';  // FIX #1
 
     if (thinkingText) {
       const thinkWrap = document.createElement('div');
@@ -838,9 +852,9 @@ async function go() {
     }
 
     addMsg('ai', replyText);
-    hist.push({ role: 'assistant', content: replyText });  // ← Fixed
+    hist.push({ role: 'assistant', content: replyText });   // FIX #1
     stEl.textContent = '';
-    saveSession(displayText, replyText);                   // ← Fixed
+    saveSession(displayText, replyText);                    // FIX #1
   } catch (err) {
     rmTyping();
     const d = document.createElement('div'); d.className = 'msg';
@@ -856,7 +870,6 @@ async function go() {
 
 function hk(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); go(); } }
 
-// ── Sessions / History ────────────────────────────────────────────────
 function loadSessions() {
   try { sessions = JSON.parse(localStorage.getItem('hdg_sessions') || '[]'); } catch { sessions = []; }
   renderHist();
@@ -917,12 +930,10 @@ function newChat() {
   renderHist();
 }
 
-// ── Init ──────────────────────────────────────────────────────────────
 const savedKey = localStorage.getItem('gkey');
 if (savedKey) { const ki = document.getElementById('gkey'); if(ki) ki.value = savedKey; }
 loadSessions();
 
-// Load products from GitHub if configured
 async function loadProductsFromGitHub() {
   const {user, repo, token} = getGHConfig();
   if (!user || !repo || !token) return;
