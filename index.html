@@ -196,7 +196,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 10
 /* Input area */
 .input-wrap { border-top: 1px solid var(--border); padding: 14px 18px; background: var(--surface); flex-shrink: 0; }
 
-
 .input-row { display: flex; gap: 8px; align-items: flex-end; }
 .input-left { flex: 1; display: flex; flex-direction: column; gap: 6px; }
 
@@ -353,19 +352,16 @@ async function fetchRefImage(productName) {
   if (!user || !repo) return null;
   const safeName = productName.replace(/[\/\\:*?"<>|]/g, '_');
 
-  // Try to get list of all images for this product (productName, productName_1, _2, _3...)
   try {
     const headers = token ? { Authorization: `token ${token}` } : {};
     const listRes = await fetch(`https://api.github.com/repos/${user}/${repo}/contents/images`, { headers });
     if (listRes.ok) {
       const files = await listRes.json();
-      // Match all files for this product: exact name or name_N
       const matched = files.filter(f => {
         const n = f.name.replace(/\.jpg$/i, '');
         return n === safeName || n.match(new RegExp(`^${safeName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}_\\d+$`));
       });
       if (matched.length > 0) {
-        // Pick a random one
         const pick = matched[Math.floor(Math.random() * matched.length)];
         const url = `https://raw.githubusercontent.com/${user}/${repo}/main/images/${pick.name}`;
         const r = await fetch(url);
@@ -380,7 +376,6 @@ async function fetchRefImage(productName) {
     }
   } catch {}
 
-  // Fallback: try direct URL
   try {
     const url = `https://raw.githubusercontent.com/${user}/${repo}/main/images/${safeName}.jpg`;
     const r = await fetch(url);
@@ -393,15 +388,16 @@ async function fetchRefImage(productName) {
     });
   } catch { return null; }
 }
+
 let mode = 'xhs';
-let hist = [];          // current conversation
-let imgB64 = null;      // current image base64
+let hist = [];
+let imgB64 = null;
 let imgMime = null;
-let sessions = [];      // all saved sessions
+let sessions = [];
 let curSessionId = null;
 
 // ── Products & prompts ──────────────────────────────────────────────
-const PRODUCTS = `100克辣椒碎｜100g/包｜批发价¥8.0
+const PRODUCTS_FALLBACK = `100克辣椒碎｜100g/包｜批发价¥8.0
 10根装50克胡椒地道肠｜500g/10根   25包/件｜批发价¥16.0
 10根装50克原味地道肠｜500g/10根   25包/件｜批发价¥16.0
 10根装80克原味地道肠｜800g/10根   20包/件｜批发价¥22.0
@@ -562,12 +558,15 @@ const MODE_PROMPTS = {
   title: `【爆款标题模式】给出：小红书标题×3、抖音标题×3、朋友圈首句×3。每个注明技巧，最后推荐最优一个并说明原因。`,
   b2b:   `【B端招商文案模式】目标：餐饮老板/摊主/档口。输出：招商标题+痛点引入+产品方案+合作优势+行动号召。语气真实有逻辑。`,
   free:  `【自由创作模式】根据需求灵活输出，保持豪大根风格：自然真实、有逻辑有依据。`,
-  img: `【生成配图模式】根据用户描述，生成一段详细的英文图片提示词(prompt)，专门用于豪大根产品场景图，风格：食品摄影，温暖光线，专业，有食欲感。然后调用图片生成。`
+  img:   `【生成配图模式】根据用户描述，生成一段详细的英文图片提示词(prompt)，专门用于豪大根产品场景图，风格：食品摄影，温暖光线，专业，有食欲感。然后调用图片生成。`
 };
 
-const SYS = `你是豪大根内容助手，专为豪大根品牌新媒体团队服务。
+// ── FIX #3: SYS is now a function so it always reads the latest product list ──
+function getSYS() {
+  const productList = window._DYNAMIC_PRODUCTS || PRODUCTS_FALLBACK;
+  return `你是豪大根内容助手，专为豪大根品牌新媒体团队服务。
 品牌定位：餐饮食材供应链，B2B为餐饮客户提供优质食材，目标通过线上内容引流进入私域成交。
-产品目录：${window._DYNAMIC_PRODUCTS || PRODUCTS}
+产品目录：${productList}
 内容原则：自然真实像真人说话；有场景感有逻辑；每次给2-3个版本；所有内容目标：引发兴趣→建立信任→引导私信→私域转化。
 
 平台风格差异：
@@ -585,6 +584,7 @@ const SYS = `你是豪大根内容助手，专为豪大根品牌新媒体团队�
 写文案时如果涉及具体产品，必须提及该产品的批发价格。
 如果用户上传了产品图片，请根据图片内容识别产品，结合品牌定位生成对应文案。
 如果用户在消息中提到"生成图片""帮我配图""来张图"等，除了文案还会自动生成产品配图。`;
+}
 
 // ── Mode ─────────────────────────────────────────────────────────────
 function setMode(el, m) {
@@ -745,11 +745,9 @@ async function go() {
     // If also wants copywriting, generate text first then image
     const alsoWantsCopy = mode !== 'img' && displayText.length > 10;
     if (alsoWantsCopy) {
-      // Generate copy first
       const copyPrompt = displayText.replace(/，?(生成图片|帮我配图|生成配图|来张图|出一张图|生成一张图?|配一张图|要图片|生成产品图)/g, '');
-      const cpParts = [{ text: `${MODE_PROMPTS[mode]}
-
-用户需求：${copyPrompt}` }];
+      // ── FIX #2: was "copyParts", now correctly named "cpParts" throughout ──
+      const cpParts = [{ text: `${MODE_PROMPTS[mode]}\n\n用户需求：${copyPrompt}` }];
       addMsg('ai', '', true);
       stEl.textContent = '正在生成文案…';
       try {
@@ -757,14 +755,14 @@ async function go() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            systemInstruction: { parts: [{ text: SYS }] },
-            contents: [{ role: 'user', parts: copyParts }],
+            systemInstruction: { parts: [{ text: getSYS() }] },
+            contents: [{ role: 'user', parts: cpParts }],  // ← Fixed
             generationConfig: { maxOutputTokens: 8000, temperature: 1, thinkingConfig: { thinkingBudget: 2048 } }
           })
         });
         const copyData = await copyRes.json();
         rmTyping();
-        const copyReply = copyData.candidates?.[0]?.content?.parts?.map(p => p.text).join('') || '';
+        const copyReply = copyData.candidates?.[0]?.content?.parts?.filter(p => !p.thought).map(p => p.text).join('') || '';
         if (copyReply) {
           addMsg('ai', copyReply);
           hist.push({ role: 'assistant', content: copyReply });
@@ -783,7 +781,7 @@ async function go() {
   parts.push({ text: `${MODE_PROMPTS[mode]}\n\n用户需求：${displayText}` });
   removeImg();
 
-  // Build conversation history for Gemini (exclude system prompt injections, keep it clean)
+  // Build conversation history for Gemini
   const geminiContents = [];
   for (const m of hist) {
     const role = m.role === 'assistant' ? 'model' : 'user';
@@ -809,7 +807,7 @@ async function go() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SYS }] },
+        systemInstruction: { parts: [{ text: getSYS() }] },  // ← Fixed: getSYS() not SYS
         contents: [...geminiContents, { role: 'user', parts }],
         generationConfig: { maxOutputTokens: 8000, temperature: 1, thinkingConfig: { thinkingBudget: 2048 } }
       })
@@ -821,12 +819,11 @@ async function go() {
     const data = await res.json();
     rmTyping();
 
-    // Extract thinking and reply parts separately
     const allParts = data.candidates?.[0]?.content?.parts || [];
     const thinkingText = allParts.filter(p => p.thought === true).map(p => p.text).join('').trim();
+    // ── FIX #1: was "reply", now consistently "replyText" throughout ──
     const replyText = allParts.filter(p => !p.thought).map(p => p.text).join('').trim() || '没有生成内容，请重试';
 
-    // Show thinking bubble if exists
     if (thinkingText) {
       const thinkWrap = document.createElement('div');
       thinkWrap.className = 'msg';
@@ -841,9 +838,9 @@ async function go() {
     }
 
     addMsg('ai', replyText);
-    hist.push({ role: 'assistant', content: reply });
+    hist.push({ role: 'assistant', content: replyText });  // ← Fixed
     stEl.textContent = '';
-    saveSession(displayText, reply);
+    saveSession(displayText, replyText);                   // ← Fixed
   } catch (err) {
     rmTyping();
     const d = document.createElement('div'); d.className = 'msg';
@@ -857,7 +854,6 @@ async function go() {
   btnEl.disabled = false; inpEl.focus();
 }
 
-function qs(t) { inpEl.value = t; go(); }
 function hk(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); go(); } }
 
 // ── Sessions / History ────────────────────────────────────────────────
@@ -945,6 +941,7 @@ async function loadProductsFromGitHub() {
       window._DYNAMIC_PRODUCTS = lines.join('\n');
       window._PRODUCT_LIST = {};
       data.forEach(p => { window._PRODUCT_LIST[p.name] = p; });
+      console.log(`✅ 已从 GitHub 加载 ${data.length} 个产品`);
     }
   } catch(e) { console.log('products load error:', e); }
 }
