@@ -26,132 +26,48 @@
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 100vh; display: flex; }
-
-.sidebar {
-  width: 260px; flex-shrink: 0;
-  background: var(--surface);
-  border-right: 1px solid var(--border);
-  display: flex; flex-direction: column;
-  height: 100vh; overflow: hidden;
-  box-shadow: 1px 0 0 var(--border);
-}
+.sidebar { width: 260px; flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; height: 100vh; overflow: hidden; box-shadow: 1px 0 0 var(--border); }
 .main { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-
-.sb-header {
-  padding: 20px 16px 14px;
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; gap: 10px;
-}
-.logo {
-  width: 36px; height: 36px; border-radius: 10px;
-  background: linear-gradient(135deg, #E8864A, #C8561A);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; box-shadow: 0 2px 12px rgba(232,134,74,0.4);
-}
+.sb-header { padding: 20px 16px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.logo { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #E8864A, #C8561A); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 12px rgba(232,134,74,0.4); }
 .logo-text { font-size: 16px; color: #fff; }
 .sb-title { font-family: 'Noto Serif SC', serif; font-size: 15px; color: var(--text-1); font-weight: 600; letter-spacing: 0.02em; }
 .sb-sub { font-size: 11px; color: var(--text-3); margin-top: 1px; }
-
-.new-chat-btn {
-  margin: 12px 12px 0;
-  padding: 9px 14px;
-  border-radius: var(--rs);
-  border: 1px solid var(--border);
-  background: var(--surface2);
-  color: var(--text-2);
-  font-size: 13px;
-  cursor: pointer;
-  font-family: 'DM Sans', sans-serif;
-  text-align: left;
-  width: calc(100% - 24px);
-  display: flex; align-items: center; gap: 8px;
-  transition: all 0.15s;
-}
+.new-chat-btn { margin: 12px 12px 0; padding: 9px 14px; border-radius: var(--rs); border: 1px solid var(--border); background: var(--surface2); color: var(--text-2); font-size: 13px; cursor: pointer; font-family: 'DM Sans', sans-serif; text-align: left; width: calc(100% - 24px); display: flex; align-items: center; gap: 8px; transition: all 0.15s; }
 .new-chat-btn:hover { background: var(--accent-light); border-color: rgba(232,134,74,0.3); color: var(--accent); }
 .new-chat-btn .plus { font-size: 18px; line-height: 1; }
-
-.hist-label {
-  padding: 14px 16px 6px;
-  font-size: 11px; font-weight: 500;
-  color: var(--text-3);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
+.hist-label { padding: 14px 16px 6px; font-size: 11px; font-weight: 500; color: var(--text-3); letter-spacing: 0.08em; text-transform: uppercase; }
 .hist-list { flex: 1; overflow-y: auto; padding: 0 8px 16px; }
 .hist-list::-webkit-scrollbar { width: 3px; }
 .hist-list::-webkit-scrollbar-thumb { background: var(--border); }
-.hist-item {
-  padding: 9px 10px;
-  border-radius: var(--rs);
-  cursor: pointer;
-  display: flex; align-items: flex-start; gap: 8px;
-  transition: background 0.15s;
-  position: relative;
-}
+.hist-item { padding: 9px 10px; border-radius: var(--rs); cursor: pointer; display: flex; align-items: flex-start; gap: 8px; transition: background 0.15s; position: relative; }
 .hist-item:hover { background: var(--surface2); }
 .hist-item.active { background: var(--accent-light); border-left: 2px solid var(--accent); padding-left: 8px; }
 .hist-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
 .hist-info { flex: 1; min-width: 0; }
 .hist-title { font-size: 13px; color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hist-meta { font-size: 11px; color: var(--text-3); margin-top: 2px; }
-.hist-del {
-  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
-  opacity: 0; font-size: 14px; color: var(--text-3);
-  background: none; border: none; cursor: pointer;
-  padding: 2px 4px; border-radius: 4px;
-}
+.hist-del { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); opacity: 0; font-size: 14px; color: var(--text-3); background: none; border: none; cursor: pointer; padding: 2px 4px; border-radius: 4px; }
 .hist-item:hover .hist-del { opacity: 1; }
 .hist-del:hover { color: #C0392B; background: #FFF0EE; }
 .hist-empty { padding: 16px 10px; font-size: 13px; color: var(--text-3); }
-
-.topbar {
-  padding: 12px 20px;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
-  display: flex; align-items: center; gap: 10px;
-  flex-shrink: 0;
-}
+.topbar { padding: 12px 20px; border-bottom: 1px solid var(--border); background: var(--surface); display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .mode-bar { display: flex; gap: 6px; flex-wrap: wrap; }
-.mbtn {
-  padding: 6px 14px; border-radius: 20px;
-  font-size: 12.5px; cursor: pointer;
-  border: 1px solid var(--border);
-  color: var(--text-2); background: var(--surface2);
-  font-family: 'DM Sans', sans-serif;
-  transition: all 0.2s; white-space: nowrap;
-}
+.mbtn { padding: 6px 14px; border-radius: 20px; font-size: 12.5px; cursor: pointer; border: 1px solid var(--border); color: var(--text-2); background: var(--surface2); font-family: 'DM Sans', sans-serif; transition: all 0.2s; white-space: nowrap; }
 .mbtn.on { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 2px 12px rgba(232,134,74,0.35); }
 .mbtn:hover:not(.on) { background: var(--accent-light); border-color: rgba(232,134,74,0.3); color: var(--accent); }
-
-#msgs {
-  flex: 1; overflow-y: auto;
-  padding: 20px; display: flex; flex-direction: column; gap: 16px;
-}
+#msgs { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
 #msgs::-webkit-scrollbar { width: 4px; }
 #msgs::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
 .msg { display: flex; gap: 10px; align-items: flex-start; animation: fadein 0.2s ease; }
 .msg.u { flex-direction: row-reverse; }
 @keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-
-.av {
-  width: 32px; height: 32px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 500; flex-shrink: 0;
-}
+.av { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; flex-shrink: 0; }
 .av.ai { background: linear-gradient(135deg, #E8864A, #C8561A); color: #fff; box-shadow: 0 2px 8px rgba(200,86,26,0.4); }
 .av.u { background: var(--user-bg); color: var(--text-2); border: 1px solid var(--border2); }
-
-.bbl {
-  max-width: 76%; padding: 14px 18px;
-  border-radius: var(--r); font-size: 14px; line-height: 1.8;
-  color: var(--text-1); word-break: break-word;
-  border: 1px solid var(--border); background: var(--surface2);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
+.bbl { max-width: 76%; padding: 14px 18px; border-radius: var(--r); font-size: 14px; line-height: 1.8; color: var(--text-1); word-break: break-word; border: 1px solid var(--border); background: var(--surface2); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
 .msg.u .bbl { background: var(--user-bg); border-color: var(--border2); }
 .msg-img { max-width: 200px; border-radius: 10px; margin-top: 8px; display: block; border: 1px solid var(--border); }
-
 .typing { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; }
 .typing-dots { display: flex; gap: 5px; align-items: center; }
 .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); animation: pulse 1.4s infinite; }
@@ -160,76 +76,27 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 10
 .thinking-text { font-size: 12px; color: var(--text-3); font-style: italic; animation: fadeThink 2s infinite; }
 @keyframes fadeThink { 0%,100%{opacity:0.4} 50%{opacity:1} }
 .thinking-step { font-size: 11.5px; color: var(--accent); opacity: 0.7; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 280px; }
-.think-bubble {
-  max-width: 76%; padding: 10px 14px;
-  border-radius: var(--r); font-size: 12.5px; line-height: 1.7;
-  color: var(--text-3); word-break: break-word;
-  border: 1px dashed var(--border2);
-  background: var(--surface2);
-  margin-bottom: 6px;
-  font-style: italic;
-}
-.think-bubble .think-header {
-  font-size: 11px; color: var(--accent); font-style: normal;
-  font-weight: 500; margin-bottom: 6px; display: flex; align-items: center; gap: 5px;
-}
-.think-bubble .think-header::before {
-  content: ''; display: inline-block; width: 6px; height: 6px;
-  border-radius: 50%; background: var(--accent); opacity: 0.7;
-  animation: fadeThink 1.5s infinite;
-}
-
+.think-bubble { max-width: 76%; padding: 10px 14px; border-radius: var(--r); font-size: 12.5px; line-height: 1.7; color: var(--text-3); word-break: break-word; border: 1px dashed var(--border2); background: var(--surface2); margin-bottom: 6px; font-style: italic; }
+.think-bubble .think-header { font-size: 11px; color: var(--accent); font-style: normal; font-weight: 500; margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
+.think-bubble .think-header::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); opacity: 0.7; animation: fadeThink 1.5s infinite; }
 .input-wrap { border-top: 1px solid var(--border); padding: 14px 18px; background: var(--surface); flex-shrink: 0; }
 .input-row { display: flex; gap: 8px; align-items: flex-end; }
 .input-left { flex: 1; display: flex; flex-direction: column; gap: 6px; }
-
 #img-preview-wrap { display: none; position: relative; width: fit-content; }
 #img-preview { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); display: block; }
-#img-remove {
-  position: absolute; top: -6px; right: -6px;
-  width: 18px; height: 18px; border-radius: 50%;
-  background: #C0392B; color: #fff;
-  border: none; cursor: pointer; font-size: 11px;
-  display: flex; align-items: center; justify-content: center;
-}
-
+#img-remove { position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 50%; background: #C0392B; color: #fff; border: none; cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center; }
 .textarea-row { display: flex; gap: 6px; align-items: flex-end; }
-textarea {
-  flex: 1; resize: none; height: 60px;
-  font-size: 14px; padding: 10px 14px;
-  border-radius: var(--rs); border: 1px solid var(--border);
-  background: var(--surface); color: var(--text-1);
-  font-family: 'DM Sans', sans-serif; line-height: 1.5; outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
+textarea { flex: 1; resize: none; height: 60px; font-size: 14px; padding: 10px 14px; border-radius: var(--rs); border: 1px solid var(--border); background: var(--surface); color: var(--text-1); font-family: 'DM Sans', sans-serif; line-height: 1.5; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
 textarea:focus { border-color: rgba(232,134,74,0.5); box-shadow: 0 0 0 3px rgba(232,134,74,0.08); }
 textarea::placeholder { color: var(--text-3); }
-
-.upload-btn {
-  width: 44px; height: 44px; border-radius: var(--rs);
-  border: 1px solid var(--border); background: var(--surface2);
-  color: var(--text-2); cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; transition: all 0.15s; flex-shrink: 0;
-}
+.upload-btn { width: 44px; height: 44px; border-radius: var(--rs); border: 1px solid var(--border); background: var(--surface2); color: var(--text-2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: all 0.15s; flex-shrink: 0; }
 .upload-btn:hover { background: var(--accent-light); border-color: rgba(232,134,74,0.3); color: var(--accent); }
-
-#send-btn {
-  height: 60px; padding: 0 22px;
-  border-radius: var(--rs); border: none;
-  background: linear-gradient(135deg, #E8864A, #C8561A);
-  color: #fff; font-size: 14px; font-weight: 500;
-  cursor: pointer; font-family: 'DM Sans', sans-serif;
-  transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
-  box-shadow: 0 2px 12px rgba(200,86,26,0.4);
-}
+#send-btn { height: 60px; padding: 0 22px; border-radius: var(--rs); border: none; background: linear-gradient(135deg, #E8864A, #C8561A); color: #fff; font-size: 14px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; white-space: nowrap; flex-shrink: 0; box-shadow: 0 2px 12px rgba(200,86,26,0.4); }
 #send-btn:hover { box-shadow: 0 4px 20px rgba(200,86,26,0.6); transform: translateY(-1px); }
 #send-btn:active { transform: translateY(0); }
 #send-btn:disabled { opacity: 0.4; cursor: default; box-shadow: none; transform: none; }
-
 #status-bar { font-size: 12px; color: var(--accent); text-align: right; padding: 6px 0 0; min-height: 20px; opacity: 0.8; }
 .err-bbl { border-color: #FFCDD2 !important; background: #FFF5F5 !important; color: #B71C1C !important; }
-
 @media (max-width: 640px) { .sidebar { display: none; } }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -280,9 +147,7 @@ textarea::placeholder { color: var(--text-3); }
       <button class="mbtn" onclick="setMode(this,'pyq')">💬 微信朋友圈</button>
     </div>
   </div>
-
   <div id="msgs"></div>
-
   <div class="input-wrap">
     <div class="input-row">
       <div class="input-left">
@@ -309,8 +174,11 @@ const btnEl  = document.getElementById('send-btn');
 const stEl   = document.getElementById('status-bar');
 const histEl = document.getElementById('hist-list');
 
-function getKey() { return localStorage.getItem('gkey') || ''; }
+// ── 模型配置（集中管理，升级只改这里）────────────────────────────────
+const MODEL_TEXT  = 'gemini-2.5-flash';        // 文案生成
+const MODEL_IMAGE = 'gemini-2.5-flash-image';  // ✅ 图片生成（已从废弃的 2.0 升级）
 
+function getKey() { return localStorage.getItem('gkey') || ''; }
 function getGHConfig() {
   return {
     user: localStorage.getItem('gh_user') || '',
@@ -319,31 +187,26 @@ function getGHConfig() {
   };
 }
 
-// ── FIX #4: 自动重试，过载时等待后重试，最多3次 ──────────────────────
 async function fetchWithRetry(url, options, maxRetries = 3) {
   for (let i = 0; i < maxRetries; i++) {
     let res;
-    try {
-      res = await fetch(url, options);
-    } catch(e) {
+    try { res = await fetch(url, options); }
+    catch(e) {
       if (i < maxRetries - 1) {
         const wait = (i + 1) * 3000;
         stEl.textContent = `网络错误，${wait/1000}秒后自动重试（${i+1}/${maxRetries}）…`;
-        await new Promise(r => setTimeout(r, wait));
-        continue;
+        await new Promise(r => setTimeout(r, wait)); continue;
       }
       throw e;
     }
     if (res.ok) return res;
-    // 克隆一份读取错误信息，因为 body 只能读一次
     const errData = await res.json().catch(() => ({}));
     const msg = errData.error?.message || '';
     const isOverload = msg.toLowerCase().includes('high demand') || res.status === 503 || res.status === 429;
     if (isOverload && i < maxRetries - 1) {
       const wait = (i + 1) * 4000;
       stEl.textContent = `服务繁忙，${wait/1000}秒后自动重试（${i+1}/${maxRetries}）…`;
-      await new Promise(r => setTimeout(r, wait));
-      continue;
+      await new Promise(r => setTimeout(r, wait)); continue;
     }
     throw new Error(msg || `请求失败 (${res.status})`);
   }
@@ -552,13 +415,12 @@ const PRODUCTS_FALLBACK = `100克辣椒碎｜100g/包｜批发价¥8.0
 粽香肉肠（酒拾烤肉）｜650g/10根   20包/件｜批发价¥26.78`;
 
 const MODE_PROMPTS = {
-  xhs:   `【小红书种草模式】标题含数字+emoji+痛点/悬念；开头3行要有钩子；正文有场景感。\n输出：① 3个标题版本（注明技巧）② 1篇完整正文300字内 ③ 引导私信/评论互动结尾`,
-  dy:    `【抖音脚本模式】前3秒必须有钩子；口播像真人对话，节奏快；结尾明确行动引导。\n输出：① 视频分段结构 ② 完整口播稿 ③ 关键字幕+镜头提示`,
-  pyq:   `【微信朋友圈模式】目标：触达微信上的餐饮老板/摊主，让他们对产品感兴趣并主动私信。\n输出3个版本，每版100字，不加奇怪表情，结尾引导私信：\n① 痛点切入款——直击餐饮老板的核心痛点（食材成本/断货/品质不稳定），用数据说话\n② 利润账单款——直接给老板算赚钱账，报批发价，算利润空间\n③ 信任建立款——供货稳定+冷链配送+免费试样，降低合作门槛\n每个版本必须包含产品名和批发价，语气自然真诚像朋友聊天。`,
-  img:   `【生成配图模式】根据用户描述，生成专业食品摄影风格的产品图。`
+  xhs: `【小红书种草模式】标题含数字+emoji+痛点/悬念；开头3行要有钩子；正文有场景感。\n输出：① 3个标题版本（注明技巧）② 1篇完整正文300字内 ③ 引导私信/评论互动结尾`,
+  dy:  `【抖音脚本模式】前3秒必须有钩子；口播像真人对话，节奏快；结尾明确行动引导。\n输出：① 视频分段结构 ② 完整口播稿 ③ 关键字幕+镜头提示`,
+  pyq: `【微信朋友圈模式】目标：触达微信上的餐饮老板/摊主，让他们对产品感兴趣并主动私信。\n输出3个版本，每版100字，不加奇怪表情，结尾引导私信：\n① 痛点切入款——直击餐饮老板的核心痛点（食材成本/断货/品质不稳定），用数据说话\n② 利润账单款——直接给老板算赚钱账，报批发价，算利润空间\n③ 信任建立款——供货稳定+冷链配送+免费试样，降低合作门槛\n每个版本必须包含产品名和批发价，语气自然真诚像朋友聊天。`,
+  img: `【生成配图模式】根据用户描述，生成专业食品摄影风格的产品图。`
 };
 
-// FIX #3: SYS 改为函数，每次调用时读取最新产品列表
 function getSYS() {
   const productList = window._DYNAMIC_PRODUCTS || PRODUCTS_FALLBACK;
   return `你是豪大根内容助手，专为豪大根品牌新媒体团队服务。
@@ -628,20 +490,9 @@ function addMsg(role, text, typing, imgSrc) {
     wrap._thinkInterval = thinkInterval;
     wrap.id = 'typing-msg';
   } else {
-    if (imgSrc) {
-      const img = document.createElement('img');
-      img.src = imgSrc; img.className = 'msg-img';
-      bbl.appendChild(img);
-    }
-    if (role === 'user') {
-      const t = document.createElement('span');
-      t.textContent = text;
-      bbl.appendChild(t);
-    } else {
-      const d = document.createElement('div');
-      d.innerHTML = (typeof marked !== 'undefined') ? marked.parse(text) : text.replace(/\n/g, '<br>');
-      bbl.appendChild(d);
-    }
+    if (imgSrc) { const img = document.createElement('img'); img.src = imgSrc; img.className = 'msg-img'; bbl.appendChild(img); }
+    if (role === 'user') { const t = document.createElement('span'); t.textContent = text; bbl.appendChild(t); }
+    else { const d = document.createElement('div'); d.innerHTML = (typeof marked !== 'undefined') ? marked.parse(text) : text.replace(/\n/g, '<br>'); bbl.appendChild(d); }
   }
   wrap.appendChild(av); wrap.appendChild(bbl);
   msgsEl.appendChild(wrap);
@@ -650,39 +501,29 @@ function addMsg(role, text, typing, imgSrc) {
 
 function rmTyping() {
   const t = document.getElementById('typing-msg');
-  if (t) {
-    if (t._thinkInterval) clearInterval(t._thinkInterval);
-    t.remove();
-  }
+  if (t) { if (t._thinkInterval) clearInterval(t._thinkInterval); t.remove(); }
 }
 
-// ── FIX #5: 正确的图片生成模型 + 无图库时的兜底逻辑 ─────────────────
 async function generateImage(prompt, refImage, productName) {
   const key = getKey();
   if (!key) { addMsg('ai', '请先填入 Gemini API Key'); return; }
   addMsg('ai', '', true);
-
-  // 根据是否有参考图，显示不同提示
-  if (refImage) {
-    stEl.textContent = `已找到「${productName}」参考图，AI 正在仿照风格生成（约20秒）…`;
-  } else {
-    stEl.textContent = `图库中暂无此产品图片，AI 正在根据产品名称自由发挥生成（约20秒）…`;
-  }
+  stEl.textContent = refImage
+    ? `已找到「${productName}」参考图，AI 正在仿照风格生成（约20秒）…`
+    : `图库中暂无此产品图片，AI 正在根据产品名称自由发挥生成（约20秒）…`;
 
   try {
     const parts = [];
     if (refImage) {
-      // 有参考图：仿照风格生成
       parts.push({ inlineData: { mimeType: refImage.mimeType, data: refImage.data } });
       parts.push({ text: `请参考这张图片的风格、光线、构图和色调，生成一张相似但不完全相同的新产品图。要求：${prompt}。保持食品摄影的专业感，画面有食欲感，创意要有变化，不要完全复制原图。图片中不要出现任何文字、标签、logo或水印。` });
     } else {
-      // 无参考图：根据产品名称+描述纯AI生成
       parts.push({ text: `生成一张专业食品摄影风格的产品图，产品是：${prompt}。要求：温暖自然光线，干净简洁背景（木板或大理石），画面有食欲感，摆盘精致，专业摄影质感，色调暖橙系。图片中不要出现任何文字、标签、logo或水印，只有食物本身。` });
     }
 
-    // FIX #5: 正确的图片生成模型名称
+    // ✅ 使用最新 gemini-2.5-flash-image 模型
     const res = await fetchWithRetry(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${key}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_IMAGE}:generateContent?key=${key}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -703,7 +544,6 @@ async function generateImage(prompt, refImage, productName) {
       const wrap = document.createElement('div'); wrap.className = 'msg';
       const av = document.createElement('div'); av.className = 'av ai'; av.textContent = '大根';
       const bbl = document.createElement('div'); bbl.className = 'bbl';
-      // 说明是有参考图还是AI自由生成
       const note = document.createElement('p');
       note.style.cssText = 'font-size:11px;color:var(--text-3);margin-bottom:6px;';
       note.textContent = refImage ? `📌 参考图库「${productName}」风格生成` : '✨ 图库暂无此产品，AI 自由创作生成';
@@ -747,42 +587,26 @@ async function go() {
 
   if (wantsImage) {
     stEl.textContent = '正在图库中查找参考图…';
-    let refImage = null;
-    let matchedProduct = null;
+    let refImage = null, matchedProduct = null;
     const allProducts = Object.keys(window._PRODUCT_LIST || {});
-    matchedProduct = allProducts.find(p => displayText.includes(p)) ||
-                     allProducts.find(p => p.includes(displayText.slice(0,4)));
-    if (matchedProduct) {
-      refImage = await fetchRefImage(matchedProduct);
-    }
+    matchedProduct = allProducts.find(p => displayText.includes(p)) || allProducts.find(p => p.includes(displayText.slice(0,4)));
+    if (matchedProduct) refImage = await fetchRefImage(matchedProduct);
 
     const alsoWantsCopy = mode !== 'img' && displayText.length > 10;
     if (alsoWantsCopy) {
       const copyPrompt = displayText.replace(/，?(生成图片|帮我配图|生成配图|来张图|出一张图|生成一张图?|配一张图|要图片|生成产品图)/g, '');
-      const cpParts = [{ text: `${MODE_PROMPTS[mode]}\n\n用户需求：${copyPrompt}` }];
       addMsg('ai', '', true);
       stEl.textContent = '正在生成文案…';
       try {
         const copyRes = await fetchWithRetry(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getKey()}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              systemInstruction: { parts: [{ text: getSYS() }] },
-              contents: [{ role: 'user', parts: cpParts }],  // FIX #2
-              generationConfig: { maxOutputTokens: 8000, temperature: 1, thinkingConfig: { thinkingBudget: 2048 } }
-            })
-          }
+          `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_TEXT}:generateContent?key=${getKey()}`,
+          { method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ systemInstruction: { parts: [{ text: getSYS() }] }, contents: [{ role: 'user', parts: [{ text: `${MODE_PROMPTS[mode]}\n\n用户需求：${copyPrompt}` }] }], generationConfig: { maxOutputTokens: 8000, temperature: 1, thinkingConfig: { thinkingBudget: 2048 } } }) }
         );
         const copyData = await copyRes.json();
         rmTyping();
         const copyReply = copyData.candidates?.[0]?.content?.parts?.filter(p => !p.thought).map(p => p.text).join('') || '';
-        if (copyReply) {
-          addMsg('ai', copyReply);
-          hist.push({ role: 'assistant', content: copyReply });
-          saveSession(displayText, copyReply);
-        }
+        if (copyReply) { addMsg('ai', copyReply); hist.push({ role: 'assistant', content: copyReply }); saveSession(displayText, copyReply); }
       } catch(e) { rmTyping(); addMsg('ai', `文案生成失败：${e.message}`); }
     }
 
@@ -807,9 +631,7 @@ async function go() {
         if (c.type === 'image') return { inlineData: { mimeType: c.source?.media_type, data: c.source?.data } };
         return { text: '' };
       }).filter(p => p.text !== '' || p.inlineData);
-    } else {
-      mParts = [{ text: String(m.content || '') }];
-    }
+    } else { mParts = [{ text: String(m.content || '') }]; }
     if (mParts.length > 0) geminiContents.push({ role, parts: mParts });
   }
 
@@ -819,42 +641,28 @@ async function go() {
 
   try {
     const res = await fetchWithRetry(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getKey()}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: getSYS() }] },  // FIX #3
-          contents: [...geminiContents, { role: 'user', parts }],
-          generationConfig: { maxOutputTokens: 8000, temperature: 1, thinkingConfig: { thinkingBudget: 2048 } }
-        })
-      }
+      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_TEXT}:generateContent?key=${getKey()}`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ systemInstruction: { parts: [{ text: getSYS() }] }, contents: [...geminiContents, { role: 'user', parts }], generationConfig: { maxOutputTokens: 8000, temperature: 1, thinkingConfig: { thinkingBudget: 2048 } } }) }
     );
-
     const data = await res.json();
     rmTyping();
-
     const allParts = data.candidates?.[0]?.content?.parts || [];
     const thinkingText = allParts.filter(p => p.thought === true).map(p => p.text).join('').trim();
-    const replyText = allParts.filter(p => !p.thought).map(p => p.text).join('').trim() || '没有生成内容，请重试';  // FIX #1
+    const replyText = allParts.filter(p => !p.thought).map(p => p.text).join('').trim() || '没有生成内容，请重试';
 
     if (thinkingText) {
-      const thinkWrap = document.createElement('div');
-      thinkWrap.className = 'msg';
-      const thinkAv = document.createElement('div');
-      thinkAv.className = 'av ai'; thinkAv.textContent = '大根';
-      const thinkBbl = document.createElement('div');
-      thinkBbl.className = 'think-bubble';
+      const thinkWrap = document.createElement('div'); thinkWrap.className = 'msg';
+      const thinkAv = document.createElement('div'); thinkAv.className = 'av ai'; thinkAv.textContent = '大根';
+      const thinkBbl = document.createElement('div'); thinkBbl.className = 'think-bubble';
       thinkBbl.innerHTML = `<div class="think-header">思考过程</div>${(typeof marked !== 'undefined') ? marked.parse(thinkingText) : thinkingText.replace(/\n/g,'<br>')}`;
       thinkWrap.appendChild(thinkAv); thinkWrap.appendChild(thinkBbl);
-      msgsEl.appendChild(thinkWrap);
-      msgsEl.scrollTop = msgsEl.scrollHeight;
+      msgsEl.appendChild(thinkWrap); msgsEl.scrollTop = msgsEl.scrollHeight;
     }
-
     addMsg('ai', replyText);
-    hist.push({ role: 'assistant', content: replyText });   // FIX #1
+    hist.push({ role: 'assistant', content: replyText });
     stEl.textContent = '';
-    saveSession(displayText, replyText);                    // FIX #1
+    saveSession(displayText, replyText);
   } catch (err) {
     rmTyping();
     const d = document.createElement('div'); d.className = 'msg';
@@ -874,11 +682,7 @@ function loadSessions() {
   try { sessions = JSON.parse(localStorage.getItem('hdg_sessions') || '[]'); } catch { sessions = []; }
   renderHist();
 }
-
-function saveSessions() {
-  localStorage.setItem('hdg_sessions', JSON.stringify(sessions.slice(0, 50)));
-}
-
+function saveSessions() { localStorage.setItem('hdg_sessions', JSON.stringify(sessions.slice(0, 50))); }
 function saveSession(userMsg, aiReply) {
   if (!curSessionId) {
     curSessionId = Date.now().toString();
@@ -886,46 +690,33 @@ function saveSession(userMsg, aiReply) {
   }
   const s = sessions.find(s => s.id === curSessionId);
   if (s) { s.msgs = [...hist]; s.title = userMsg.slice(0, 28); }
-  saveSessions();
-  renderHist();
+  saveSessions(); renderHist();
 }
-
 function renderHist() {
   if (!sessions.length) { histEl.innerHTML = '<div class="hist-empty">暂无历史记录</div>'; return; }
   histEl.innerHTML = sessions.map(s => `
     <div class="hist-item ${s.id === curSessionId ? 'active' : ''}" onclick="loadSession('${s.id}')">
       <span class="hist-icon">💬</span>
-      <div class="hist-info">
-        <div class="hist-title">${s.title || '新对话'}</div>
-        <div class="hist-meta">${s.date || ''}</div>
-      </div>
+      <div class="hist-info"><div class="hist-title">${s.title || '新对话'}</div><div class="hist-meta">${s.date || ''}</div></div>
       <button class="hist-del" onclick="delSession(event,'${s.id}')">×</button>
     </div>`).join('');
 }
-
 function loadSession(id) {
   const s = sessions.find(s => s.id === id);
   if (!s) return;
-  curSessionId = id;
-  hist = s.msgs || [];
+  curSessionId = id; hist = s.msgs || [];
   msgsEl.innerHTML = '';
-  hist.forEach(m => {
-    const text = Array.isArray(m.content) ? m.content.find(c => c.type === 'text')?.text || '' : m.content;
-    addMsg(m.role, text);
-  });
+  hist.forEach(m => { const text = Array.isArray(m.content) ? m.content.find(c => c.type === 'text')?.text || '' : m.content; addMsg(m.role, text); });
   renderHist();
 }
-
 function delSession(e, id) {
   e.stopPropagation();
   sessions = sessions.filter(s => s.id !== id);
   if (curSessionId === id) newChat();
   saveSessions(); renderHist();
 }
-
 function newChat() {
-  curSessionId = null; hist = [];
-  msgsEl.innerHTML = '';
+  curSessionId = null; hist = []; msgsEl.innerHTML = '';
   addMsg('ai', '新对话开始！选好上方场景，告诉我要推哪款产品 🥩');
   renderHist();
 }
