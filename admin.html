@@ -251,11 +251,19 @@ async function loadLibrary() {
     grid.innerHTML = '';
     imgs.forEach(f => {
       const name = f.name.replace(/\.(jpg|jpeg|png|webp)$/i, '');
-      const url = `https://raw.githubusercontent.com/${user}/${repo}/main/images/${f.name}`;
       const item = document.createElement('div'); item.className = 'img-item';
-      item.innerHTML = `<img src="${url}" alt="${name}" loading="lazy">
-        <div class="img-label" title="${name}">${name}</div>
-        <button class="img-del" onclick="deleteImg('${f.path}','${f.sha}','${name}')" title="删除">×</button>`;
+      // Use download_url from API response (includes auth if needed)
+      const imgEl = document.createElement('img');
+      imgEl.alt = name; imgEl.loading = 'lazy';
+      // Fetch image with token for private repos
+      fetch(f.url, { headers: { Authorization: `token ${token}` } })
+        .then(r => r.json())
+        .then(d => { imgEl.src = `data:image/jpeg;base64,${d.content.replace(/\n/g,'')}`; })
+        .catch(() => { imgEl.src = f.download_url || ''; });
+      const label = document.createElement('div'); label.className = 'img-label'; label.title = name; label.textContent = name;
+      const delBtn = document.createElement('button'); delBtn.className = 'img-del'; delBtn.title = '删除'; delBtn.textContent = '×';
+      delBtn.onclick = () => deleteImg(f.path, f.sha, name);
+      item.appendChild(imgEl); item.appendChild(label); item.appendChild(delBtn);
       grid.appendChild(item);
     });
   } catch(e) { grid.innerHTML = `<p style="font-size:13px;color:#C0392B">${e.message}</p>`; }
