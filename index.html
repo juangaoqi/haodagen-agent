@@ -637,9 +637,9 @@ async function generateImage(prompt, refImage) {
     const parts = [];
     if (refImage) {
       parts.push({ inlineData: { mimeType: refImage.mimeType, data: refImage.data } });
-      parts.push({ text: `请参考这张图片的风格、光线、构图和色调，生成一张相似但不完全相同的新产品图。要求：${prompt}。保持食品摄影的专业感，画面有食欲感，但图片内容要有创意变化，不要完全复制。` });
+      parts.push({ text: `请参考这张图片的风格、光线、构图和色调，生成一张相似但不完全相同的新产品图。要求：${prompt}。保持食品摄影的专业感，画面有食欲感，但图片内容要有创意变化，不要完全复制。图片中不要出现任何文字、标签、logo或水印。` });
     } else {
-      parts.push({ text: `生成一张专业食品摄影风格的产品图。要求：${prompt}。风格：温暖光线，干净背景，有食欲感，专业摄影质感。` });
+      parts.push({ text: `生成一张专业食品摄影风格的产品图。要求：${prompt}。风格：温暖光线，干净背景，有食欲感，专业摄影质感。图片中不要出现任何文字、标签、logo或水印，纯产品图。` });
     }
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${key}`, {
       method: 'POST',
