@@ -552,7 +552,7 @@ const MODE_PROMPTS = {
 
 const SYS = `你是豪大根内容助手，专为豪大根品牌新媒体团队服务。
 品牌定位：餐饮食材供应链，B2B为餐饮客户提供优质食材，目标通过线上内容引流进入私域成交。
-产品目录：${PRODUCTS}
+产品目录：${window._DYNAMIC_PRODUCTS || PRODUCTS}
 内容原则：自然真实像真人说话；有场景感有逻辑；每次给2-3个版本；所有内容目标：引发兴趣→建立信任→引导私信→私域转化。
 
 核心卖点（写文案必须体现1-2个）：
@@ -836,6 +836,25 @@ function newChat() {
 const savedKey = localStorage.getItem('gkey');
 if (savedKey) { const ki = document.getElementById('gkey'); if(ki) ki.value = savedKey; }
 loadSessions();
+
+// Load products from GitHub if configured
+async function loadProductsFromGitHub() {
+  const {user, repo} = getGHConfig();
+  if (!user || !repo) return;
+  try {
+    const r = await fetch(`https://raw.githubusercontent.com/${user}/${repo}/main/products.json`);
+    if (!r.ok) return;
+    const data = await r.json();
+    if (Array.isArray(data) && data.length > 0) {
+      const lines = data.map(p => p.spec ? `${p.name}｜${p.spec}｜批发价¥${p.price}` : `${p.name}｜批发价¥${p.price}`);
+      window._DYNAMIC_PRODUCTS = lines.join('\n');
+      window._PRODUCT_LIST = {};
+      data.forEach(p => { window._PRODUCT_LIST[p.name] = p; });
+    }
+  } catch {}
+}
+loadProductsFromGitHub();
+
 addMsg('ai', `嗨！我是豪大根内容助手 🥩
 
 我能帮你生成：
