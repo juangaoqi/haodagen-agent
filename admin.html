@@ -109,6 +109,49 @@ h1{font-size:18px;font-weight:500;color:var(--text-1);margin-bottom:4px}
   </div>
 </div>
 
+  <!-- 产品管理 -->
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <h1 style="font-size:15px">产品管理 <span class="count-badge" id="prod-count-badge">0 个</span></h1>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sec" onclick="loadProducts()" style="padding:6px 14px;font-size:12px">刷新</button>
+        <button class="btn" onclick="showAddProduct()" style="padding:6px 14px;font-size:12px">+ 新增产品</button>
+      </div>
+    </div>
+
+    <!-- Add/Edit form -->
+    <div id="prod-form" style="display:none;background:var(--bg);border-radius:8px;padding:14px;margin-bottom:14px;border:1px solid var(--border)">
+      <div class="row">
+        <div class="field">
+          <label>产品名称</label>
+          <input type="text" id="prod-name" placeholder="例：豪大根500g德式香肠" />
+        </div>
+        <div class="field">
+          <label>规格</label>
+          <input type="text" id="prod-spec" placeholder="例：500g/10根 20包/件" />
+        </div>
+        <div class="field" style="max-width:120px">
+          <label>批发价（元）</label>
+          <input type="number" id="prod-price" placeholder="30" step="0.1" />
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn" onclick="saveProduct()" style="padding:8px 16px;font-size:13px">保存</button>
+        <button class="btn btn-sec" onclick="cancelProduct()" style="padding:8px 16px;font-size:13px">取消</button>
+      </div>
+      <p class="status-bar" id="prod-form-status"></p>
+    </div>
+
+    <!-- Search -->
+    <input type="text" id="prod-search" placeholder="搜索产品名称…" oninput="filterProducts()" style="width:100%;margin-bottom:10px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--text-1);outline:none">
+
+    <!-- Product list -->
+    <div id="prod-list" style="display:flex;flex-direction:column;gap:6px">
+      <p style="font-size:13px;color:var(--text-3)">配置 GitHub 后点击刷新加载产品</p>
+    </div>
+    <p class="status-bar" id="prod-status"></p>
+  </div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -286,12 +329,160 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-// Load saved config
+// ── Product Management ──────────────────────────────────────────────
+let allProducts = [];
+let editingIndex = -1;
+const PRODUCTS_PATH = 'products.json';
+
+async function loadProducts() {
+  const {user, repo, token} = getConfig();
+  if (!user || !repo || !token) return;
+  document.getElementById('prod-status').textContent = '加载中…';
+  try {
+    const r = await fetch(`https://api.github.com/repos/${user}/${repo}/contents/${PRODUCTS_PATH}`, {
+      headers: { Authorization: `token ${token}` }
+    });
+    if (r.ok) {
+      const d = await r.json();
+      const text = atob(d.content.replace(/\n/g, ''));
+      allProducts = JSON.parse(text);
+    } else {
+      // File doesn't exist yet, use default products
+      allProducts = DEFAULT_PRODUCTS;
+    }
+    document.getElementById('prod-count-badge').textContent = `${allProducts.length} 个`;
+    document.getElementById('prod-status').textContent = '';
+    renderProducts(allProducts);
+  } catch(e) {
+    allProducts = DEFAULT_PRODUCTS;
+    renderProducts(allProducts);
+    document.getElementById('prod-status').textContent = '使用默认产品数据';
+  }
+}
+
+async function saveProductsToGitHub() {
+  const {user, repo, token} = getConfig();
+  const content = btoa(unescape(encodeURIComponent(JSON.stringify(allProducts, null, 2))));
+  // Get current SHA if exists
+  let sha = '';
+  try {
+    const r = await fetch(`https://api.github.com/repos/${user}/${repo}/contents/${PRODUCTS_PATH}`, {
+      headers: { Authorization: `token ${token}` }
+    });
+    if (r.ok) { const d = await r.json(); sha = d.sha; }
+  } catch {}
+
+  const body = { message: '更新产品列表', content };
+  if (sha) body.sha = sha;
+
+  const r = await fetch(`https://api.github.com/repos/${user}/${repo}/contents/${PRODUCTS_PATH}`, {
+    method: 'PUT',
+    headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  return r.ok;
+}
+
+function renderProducts(list) {
+  const el = document.getElementById('prod-list');
+  if (!list.length) { el.innerHTML = '<p style="font-size:13px;color:var(--text-3)">暂无产品</p>'; return; }
+  el.innerHTML = list.map((p, i) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;color:var(--text-1);font-weight:500">${p.name}</div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:2px">${p.spec || '—'} ${p.price ? '· 批发价¥' + p.price : ''}</div>
+      </div>
+      <button class="btn btn-sec" onclick="editProduct(${i})" style="padding:4px 10px;font-size:12px">编辑</button>
+      <button onclick="deleteProduct(${i})" style="padding:4px 10px;font-size:12px;border-radius:6px;border:1px solid #FFCDD2;background:#FFF5F5;color:#C0392B;cursor:pointer">删除</button>
+    </div>`).join('');
+}
+
+function filterProducts() {
+  const q = document.getElementById('prod-search').value.toLowerCase();
+  renderProducts(q ? allProducts.filter(p => p.name.toLowerCase().includes(q)) : allProducts);
+}
+
+function showAddProduct() {
+  editingIndex = -1;
+  document.getElementById('prod-name').value = '';
+  document.getElementById('prod-spec').value = '';
+  document.getElementById('prod-price').value = '';
+  document.getElementById('prod-form').style.display = 'block';
+  document.getElementById('prod-form-status').textContent = '';
+  document.getElementById('prod-name').focus();
+}
+
+function editProduct(i) {
+  editingIndex = i;
+  const p = allProducts[i];
+  document.getElementById('prod-name').value = p.name || '';
+  document.getElementById('prod-spec').value = p.spec || '';
+  document.getElementById('prod-price').value = p.price || '';
+  document.getElementById('prod-form').style.display = 'block';
+  document.getElementById('prod-form-status').textContent = '';
+  document.getElementById('prod-name').focus();
+}
+
+function cancelProduct() {
+  document.getElementById('prod-form').style.display = 'none';
+  editingIndex = -1;
+}
+
+async function saveProduct() {
+  const name = document.getElementById('prod-name').value.trim();
+  const spec = document.getElementById('prod-spec').value.trim();
+  const price = parseFloat(document.getElementById('prod-price').value) || 0;
+  if (!name) { document.getElementById('prod-form-status').textContent = '请填写产品名称'; return; }
+
+  const prod = { name, spec, price };
+  if (editingIndex >= 0) {
+    allProducts[editingIndex] = prod;
+  } else {
+    allProducts.unshift(prod);
+  }
+
+  document.getElementById('prod-form-status').textContent = '保存中…';
+  const ok = await saveProductsToGitHub();
+  if (ok) {
+    document.getElementById('prod-form-status').textContent = '';
+    document.getElementById('prod-form').style.display = 'none';
+    document.getElementById('prod-count-badge').textContent = `${allProducts.length} 个`;
+    renderProducts(allProducts);
+    showToast(editingIndex >= 0 ? '已更新' : '已新增');
+    editingIndex = -1;
+  } else {
+    document.getElementById('prod-form-status').textContent = '❌ 保存失败，请检查 Token 权限';
+  }
+}
+
+async function deleteProduct(i) {
+  if (!confirm(`确定删除「${allProducts[i].name}」吗？`)) return;
+  allProducts.splice(i, 1);
+  const ok = await saveProductsToGitHub();
+  if (ok) {
+    document.getElementById('prod-count-badge').textContent = `${allProducts.length} 个`;
+    renderProducts(allProducts);
+    showToast('已删除');
+  } else {
+    showToast('删除失败');
+  }
+}
+
+// Default products (fallback)
+const DEFAULT_PRODUCTS = [
+  {name:"豪大根1.2kg日式芝士猪排（厚切）",spec:"1.2kg/10片/包",price:52},
+  {name:"豪大根1.3kg日式猪排（厚切）",spec:"1.3kg/10片/包 6包/件",price:42},
+  {name:"豪大根500g德式香肠拼盘",spec:"500g/包 6根/包 20包/件",price:35},
+  {name:"豪大根台式士林大香肠",spec:"500g/5根 20包/件",price:25},
+  {name:"豪大根10根装50克原味地道肠",spec:"500g/10根 25包/件",price:16},
+];
+
+// ── Init ──────────────────────────────────────────────────────────────
 window.onload = () => {
   const c = getConfig();
   if (c.user) document.getElementById('gh-user').value = c.user;
   if (c.repo) document.getElementById('gh-repo').value = c.repo;
-  if (c.token) { document.getElementById('gh-token').value = c.token; loadLibrary(); }
+  if (c.token) { document.getElementById('gh-token').value = c.token; loadLibrary(); loadProducts(); }
 };
 </script>
 </body>
