@@ -717,17 +717,17 @@ async function go() {
   const geminiContents = [];
   for (const m of hist) {
     const role = m.role === 'assistant' ? 'model' : 'user';
-    let parts;
+    let mParts;
     if (Array.isArray(m.content)) {
-      parts = m.content.map(c => {
+      mParts = m.content.map(c => {
         if (c.type === 'text') return { text: c.text };
         if (c.type === 'image') return { inlineData: { mimeType: c.source?.media_type, data: c.source?.data } };
         return { text: '' };
       }).filter(p => p.text !== '' || p.inlineData);
     } else {
-      parts = [{ text: String(m.content || '') }];
+      mParts = [{ text: String(m.content || '') }];
     }
-    if (parts.length > 0) geminiContents.push({ role, parts });
+    if (mParts.length > 0) geminiContents.push({ role, parts: mParts });
   }
 
   hist.push({ role: 'user', content: parts.map(p => p.text ? { type: 'text', text: p.text } : { type: 'image', source: { type: 'base64', media_type: p.inlineData?.mimeType, data: p.inlineData?.data } }) });
@@ -839,19 +839,25 @@ loadSessions();
 
 // Load products from GitHub if configured
 async function loadProductsFromGitHub() {
-  const {user, repo} = getGHConfig();
-  if (!user || !repo) return;
+  const {user, repo, token} = getGHConfig();
+  if (!user || !repo || !token) return;
   try {
-    const r = await fetch(`https://raw.githubusercontent.com/${user}/${repo}/main/products.json`);
+    const headers = { Authorization: `token ${token}` };
+    const r = await fetch(`https://api.github.com/repos/${user}/${repo}/contents/products.json`, { headers });
     if (!r.ok) return;
-    const data = await r.json();
+    const d = await r.json();
+    const binary = atob(d.content.replace(/\n/g, ''));
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    const text = new TextDecoder('utf-8').decode(bytes);
+    const data = JSON.parse(text);
     if (Array.isArray(data) && data.length > 0) {
       const lines = data.map(p => p.spec ? `${p.name}｜${p.spec}｜批发价¥${p.price}` : `${p.name}｜批发价¥${p.price}`);
       window._DYNAMIC_PRODUCTS = lines.join('\n');
       window._PRODUCT_LIST = {};
       data.forEach(p => { window._PRODUCT_LIST[p.name] = p; });
     }
-  } catch {}
+  } catch(e) { console.log('products load error:', e); }
 }
 loadProductsFromGitHub();
 
