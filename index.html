@@ -4,21 +4,25 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>豪大根内容助手</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #FAF7F2;
-  --surface: #FFFFFF;
-  --border: #E8E2D9;
-  --accent: #C8561A;
-  --accent-light: #FDF0E8;
+  --bg: #0F0F12;
+  --surface: #18181E;
+  --surface2: #1E1E26;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.12);
+  --accent: #E8864A;
+  --accent2: #C8561A;
+  --accent-light: rgba(232,134,74,0.12);
   --accent-mid: #E8864A;
-  --text-1: #1A1510;
-  --text-2: #6B5F52;
-  --text-3: #A89C8E;
-  --user-bg: #F0EBE4;
-  --r: 16px;
+  --text-1: #F0EDE8;
+  --text-2: #A09890;
+  --text-3: #5A5450;
+  --user-bg: #1E1E26;
+  --r: 14px;
   --rs: 10px;
+  --glow: 0 0 20px rgba(232,134,74,0.15);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 100vh; display: flex; }
@@ -30,6 +34,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 10
   border-right: 1px solid var(--border);
   display: flex; flex-direction: column;
   height: 100vh; overflow: hidden;
+  box-shadow: 1px 0 0 var(--border);
 }
 .main { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
@@ -41,12 +46,12 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 10
 }
 .logo {
   width: 36px; height: 36px; border-radius: 10px;
-  background: var(--accent);
+  background: linear-gradient(135deg, #E8864A, #C8561A);
   display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
+  flex-shrink: 0; box-shadow: 0 2px 12px rgba(232,134,74,0.4);
 }
 .logo-text { font-size: 16px; color: #fff; }
-.sb-title { font-family: 'Noto Serif SC', serif; font-size: 15px; color: var(--text-1); font-weight: 600; }
+.sb-title { font-family: 'Noto Serif SC', serif; font-size: 15px; color: var(--text-1); font-weight: 600; letter-spacing: 0.02em; }
 .sb-sub { font-size: 11px; color: var(--text-3); margin-top: 1px; }
 
 /* Sidebar new chat */
@@ -55,7 +60,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 10
   padding: 9px 14px;
   border-radius: var(--rs);
   border: 1px solid var(--border);
-  background: var(--bg);
+  background: var(--surface2);
   color: var(--text-2);
   font-size: 13px;
   cursor: pointer;
@@ -65,7 +70,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 10
   display: flex; align-items: center; gap: 8px;
   transition: all 0.15s;
 }
-.new-chat-btn:hover { background: var(--accent-light); border-color: var(--accent-mid); color: var(--accent); }
+.new-chat-btn:hover { background: var(--accent-light); border-color: rgba(232,134,74,0.3); color: var(--accent); }
 .new-chat-btn .plus { font-size: 18px; line-height: 1; }
 
 /* History */
@@ -84,11 +89,11 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 10
   border-radius: var(--rs);
   cursor: pointer;
   display: flex; align-items: flex-start; gap: 8px;
-  transition: background 0.12s;
+  transition: background 0.15s;
   position: relative;
 }
-.hist-item:hover { background: var(--bg); }
-.hist-item.active { background: var(--accent-light); }
+.hist-item:hover { background: var(--surface2); }
+.hist-item.active { background: var(--accent-light); border-left: 2px solid var(--accent); padding-left: 8px; }
 .hist-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
 .hist-info { flex: 1; min-width: 0; }
 .hist-title { font-size: 13px; color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -105,23 +110,24 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 10
 
 /* Top bar */
 .topbar {
-  padding: 14px 20px;
+  padding: 12px 20px;
   border-bottom: 1px solid var(--border);
   background: var(--surface);
   display: flex; align-items: center; gap: 10px;
   flex-shrink: 0;
+  backdrop-filter: blur(10px);
 }
 .mode-bar { display: flex; gap: 6px; flex-wrap: wrap; }
 .mbtn {
   padding: 6px 14px; border-radius: 20px;
   font-size: 12.5px; cursor: pointer;
   border: 1px solid var(--border);
-  color: var(--text-2); background: var(--bg);
+  color: var(--text-2); background: var(--surface2);
   font-family: 'DM Sans', sans-serif;
-  transition: all 0.15s; white-space: nowrap;
+  transition: all 0.2s; white-space: nowrap;
 }
-.mbtn.on { background: var(--accent); border-color: var(--accent); color: #fff; }
-.mbtn:hover:not(.on) { background: var(--accent-light); border-color: var(--accent-mid); color: var(--accent); }
+.mbtn.on { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 2px 12px rgba(232,134,74,0.35); }
+.mbtn:hover:not(.on) { background: var(--accent-light); border-color: rgba(232,134,74,0.3); color: var(--accent); }
 
 /* Messages */
 #msgs {
@@ -140,14 +146,15 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 10
   display: flex; align-items: center; justify-content: center;
   font-size: 12px; font-weight: 500; flex-shrink: 0;
 }
-.av.ai { background: var(--accent); color: #fff; }
-.av.u { background: var(--user-bg); color: var(--text-2); }
+.av.ai { background: linear-gradient(135deg, #E8864A, #C8561A); color: #fff; box-shadow: 0 2px 8px rgba(200,86,26,0.4); }
+.av.u { background: var(--surface2); color: var(--text-2); border: 1px solid var(--border); }
 
 .bbl {
-  max-width: 76%; padding: 12px 16px;
-  border-radius: var(--r); font-size: 14px; line-height: 1.75;
+  max-width: 76%; padding: 14px 18px;
+  border-radius: var(--r); font-size: 14px; line-height: 1.8;
   color: var(--text-1); word-break: break-word;
-  border: 1px solid var(--border); background: var(--surface);
+  border: 1px solid var(--border); background: var(--surface2);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 .bbl h3 { font-size: 14px; font-weight: 500; margin: 10px 0 4px; color: var(--text-1); }
 .bbl strong { font-weight: 500; color: var(--text-1); }
@@ -155,26 +162,30 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 10
 .bbl ul, .bbl ol { padding-left: 18px; margin: 6px 0; }
 .bbl li { margin: 3px 0; }
 .bbl hr { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
-.msg.u .bbl { background: var(--user-bg); border-color: transparent; }
+.msg.u .bbl { background: var(--surface); border-color: var(--border2); }
 .msg-img { max-width: 200px; border-radius: 10px; margin-top: 8px; display: block; border: 1px solid var(--border); }
 
 /* Typing */
-.typing { display: flex; gap: 5px; align-items: center; padding: 14px 16px; }
-.dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-mid); animation: pulse 1.2s infinite; }
+.typing { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; }
+.typing-dots { display: flex; gap: 5px; align-items: center; }
+.dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); animation: pulse 1.4s infinite; }
 .dot:nth-child(2) { animation-delay: .2s; } .dot:nth-child(3) { animation-delay: .4s; }
-@keyframes pulse { 0%,80%,100%{opacity:.3;transform:scale(0.8)} 40%{opacity:1;transform:scale(1)} }
+@keyframes pulse { 0%,80%,100%{opacity:.2;transform:scale(0.7)} 40%{opacity:1;transform:scale(1)} }
+.thinking-text { font-size: 12px; color: var(--text-3); font-style: italic; animation: fadeThink 2s infinite; }
+@keyframes fadeThink { 0%,100%{opacity:0.4} 50%{opacity:1} }
+.thinking-step { font-size: 11.5px; color: var(--accent); opacity: 0.7; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 280px; }
 
 /* Input area */
-.input-wrap { border-top: 1px solid var(--border); padding: 12px 16px; background: var(--surface); flex-shrink: 0; }
+.input-wrap { border-top: 1px solid var(--border); padding: 14px 18px; background: var(--surface); flex-shrink: 0; }
 .quick-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
 .tag {
-  padding: 4px 11px; border-radius: 20px;
+  padding: 4px 12px; border-radius: 20px;
   font-size: 12px; cursor: pointer;
   border: 1px solid var(--border);
-  color: var(--text-2); background: var(--bg);
-  font-family: 'DM Sans', sans-serif; transition: all 0.12s;
+  color: var(--text-2); background: var(--surface2);
+  font-family: 'DM Sans', sans-serif; transition: all 0.15s;
 }
-.tag:hover { background: var(--accent-light); border-color: var(--accent-mid); color: var(--accent); }
+.tag:hover { background: var(--accent-light); border-color: rgba(232,134,74,0.3); color: var(--accent); }
 
 .input-row { display: flex; gap: 8px; align-items: flex-end; }
 .input-left { flex: 1; display: flex; flex-direction: column; gap: 6px; }
@@ -195,36 +206,38 @@ textarea {
   flex: 1; resize: none; height: 60px;
   font-size: 14px; padding: 10px 14px;
   border-radius: var(--rs); border: 1px solid var(--border);
-  background: var(--bg); color: var(--text-1);
+  background: var(--surface2); color: var(--text-1);
   font-family: 'DM Sans', sans-serif; line-height: 1.5; outline: none;
-  transition: border-color 0.15s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
-textarea:focus { border-color: var(--accent-mid); }
+textarea:focus { border-color: rgba(232,134,74,0.5); box-shadow: 0 0 0 3px rgba(232,134,74,0.08); }
 textarea::placeholder { color: var(--text-3); }
 
 /* Upload button */
 .upload-btn {
   width: 44px; height: 44px; border-radius: var(--rs);
-  border: 1px solid var(--border); background: var(--bg);
+  border: 1px solid var(--border); background: var(--surface2);
   color: var(--text-2); cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   font-size: 18px; transition: all 0.15s; flex-shrink: 0;
 }
-.upload-btn:hover { background: var(--accent-light); border-color: var(--accent-mid); color: var(--accent); }
+.upload-btn:hover { background: var(--accent-light); border-color: rgba(232,134,74,0.3); color: var(--accent); }
 
 /* Send button */
 #send-btn {
-  height: 60px; padding: 0 20px;
+  height: 60px; padding: 0 22px;
   border-radius: var(--rs); border: none;
-  background: var(--accent); color: #fff;
-  font-size: 14px; font-weight: 500;
+  background: linear-gradient(135deg, #E8864A, #C8561A);
+  color: #fff; font-size: 14px; font-weight: 500;
   cursor: pointer; font-family: 'DM Sans', sans-serif;
-  transition: background 0.15s; white-space: nowrap; flex-shrink: 0;
+  transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
+  box-shadow: 0 2px 12px rgba(200,86,26,0.4);
 }
-#send-btn:hover { background: #B04415; }
-#send-btn:disabled { opacity: 0.45; cursor: default; }
+#send-btn:hover { box-shadow: 0 4px 20px rgba(200,86,26,0.6); transform: translateY(-1px); }
+#send-btn:active { transform: translateY(0); }
+#send-btn:disabled { opacity: 0.4; cursor: default; box-shadow: none; transform: none; }
 
-#status-bar { font-size: 12px; color: var(--text-3); text-align: right; padding: 6px 0 0; min-height: 20px; }
+#status-bar { font-size: 12px; color: var(--accent); text-align: right; padding: 6px 0 0; min-height: 20px; opacity: 0.8; }
 
 .err-bbl { border-color: #FFCDD2 !important; background: #FFF5F5 !important; color: #B71C1C !important; }
 
@@ -234,13 +247,16 @@ textarea::placeholder { color: var(--text-3); }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <style>
-.bbl h1,.bbl h2,.bbl h3,.bbl h4{font-size:14px;font-weight:600;margin:12px 0 4px;color:var(--text-1)}
-.bbl p{margin:4px 0;line-height:1.7}
-.bbl ul,.bbl ol{padding-left:18px;margin:6px 0}
-.bbl li{margin:3px 0;line-height:1.65}
-.bbl hr{border:none;border-top:1px solid var(--border);margin:12px 0}
-.bbl strong{font-weight:600}
-.bbl blockquote{border-left:3px solid var(--accent);padding-left:10px;color:var(--text-2);margin:8px 0}
+.bbl h1,.bbl h2,.bbl h3,.bbl h4{font-size:14px;font-weight:600;margin:14px 0 6px;color:var(--accent);letter-spacing:0.02em}
+.bbl h1:first-child,.bbl h2:first-child,.bbl h3:first-child{margin-top:0}
+.bbl p{margin:6px 0;line-height:1.8;color:var(--text-1)}
+.bbl ul,.bbl ol{padding-left:18px;margin:8px 0}
+.bbl li{margin:4px 0;line-height:1.7;color:var(--text-1)}
+.bbl hr{border:none;border-top:1px solid var(--border);margin:14px 0;opacity:0.5}
+.bbl strong{font-weight:600;color:var(--text-1)}
+.bbl em{color:var(--text-2);font-style:italic}
+.bbl blockquote{border-left:2px solid var(--accent);padding:6px 12px;color:var(--text-2);margin:10px 0;background:var(--accent-light);border-radius:0 6px 6px 0}
+.bbl code{background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent)}
 </style>
 </head>
 <body>
@@ -543,7 +559,12 @@ const PRODUCTS = `100克辣椒碎｜100g/包｜批发价¥8.0
 const MODE_PROMPTS = {
   xhs:   `【小红书种草模式】标题含数字+emoji+痛点/悬念；开头3行要有钩子；正文有场景感。\n输出：① 3个标题版本（注明技巧）② 1篇完整正文300字内 ③ 引导私信/评论互动结尾`,
   dy:    `【抖音脚本模式】前3秒必须有钩子；口播像真人对话，节奏快；结尾明确行动引导。\n输出：① 视频分段结构 ② 完整口播稿 ③ 关键字幕+镜头提示`,
-  pyq:   `【微信朋友圈模式】输出3个版本：①真实日常款 ②干货数据款 ③情感共鸣款。每版100字+emoji，结尾引导私信。`,
+  pyq:   `【微信朋友圈模式】目标：触达微信上的餐饮老板/摊主，让他们对产品感兴趣并主动私信。
+输出3个版本，每版100字+emoji，结尾引导私信：
+① 痛点切入款——直击餐饮老板的核心痛点（食材成本/断货/品质不稳定），用数据说话
+② 利润诱惑款——直接算利润账，让老板看到赚钱空间，突出批发价优势
+③ 信任背书款——用供货稳定/冷链配送/免费试样建立信任，降低合作门槛
+每个版本必须包含具体产品名称和批发价，不要写空泛的品牌故事，要写让老板心动的实在内容。`,
   title: `【爆款标题模式】给出：小红书标题×3、抖音标题×3、朋友圈首句×3。每个注明技巧，最后推荐最优一个并说明原因。`,
   b2b:   `【B端招商文案模式】目标：餐饮老板/摊主/档口。输出：招商标题+痛点引入+产品方案+合作优势+行动号召。语气真实有逻辑。`,
   free:  `【自由创作模式】根据需求灵活输出，保持豪大根风格：自然真实、有逻辑有依据。`,
@@ -602,7 +623,16 @@ function addMsg(role, text, typing, imgSrc) {
   const bbl = document.createElement('div');
   bbl.className = 'bbl';
   if (typing) {
-    bbl.innerHTML = '<div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+    const phrases = ["分析你的需求中…","结合豪大根产品特点…","思考最佳文案角度…","提炼核心卖点…","构思文案结构…","优化表达方式…"];
+    let phraseIdx = 0;
+    bbl.innerHTML = '<div class="typing"><div class="typing-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><div class="thinking-text">AI 思考中</div><div class="thinking-step" id="thinking-step">' + phrases[0] + '</div></div>';
+    const thinkInterval = setInterval(() => {
+      phraseIdx = (phraseIdx + 1) % phrases.length;
+      const el = document.getElementById('thinking-step');
+      if (el) el.textContent = phrases[phraseIdx];
+      else clearInterval(thinkInterval);
+    }, 1800);
+    wrap._thinkInterval = thinkInterval;
     wrap.id = 'typing-msg';
   } else {
     if (imgSrc) {
@@ -625,7 +655,13 @@ function addMsg(role, text, typing, imgSrc) {
   msgsEl.scrollTop = msgsEl.scrollHeight;
 }
 
-function rmTyping() { const t = document.getElementById('typing-msg'); if (t) t.remove(); }
+function rmTyping() {
+  const t = document.getElementById('typing-msg');
+  if (t) {
+    if (t._thinkInterval) clearInterval(t._thinkInterval);
+    t.remove();
+  }
+}
 
 // ── Send ──────────────────────────────────────────────────────────────
 async function generateImage(prompt, refImage) {
@@ -691,18 +727,51 @@ async function go() {
   const previewSrc = imgB64 ? document.getElementById('img-preview').src : null;
   addMsg('user', displayText, false, previewSrc);
 
-  if (mode === 'img') {
-    // Try to find a matching product reference image
+  // Auto-detect image generation request in any mode
+  const imgKeywords = ['生成图片', '帮我配图', '生成配图', '来张图', '出一张图', '生成一张', '配一张图', '要图片', '生成产品图'];
+  const wantsImage = mode === 'img' || imgKeywords.some(k => displayText.includes(k));
+
+  if (wantsImage) {
     stEl.textContent = '正在图库中查找参考图…';
     let refImage = null;
     const allProducts = Object.keys(window._PRODUCT_LIST || {});
-    // Find best matching product name from user input
-    const matched = allProducts.find(p => displayText.includes(p)) || 
+    const matched = allProducts.find(p => displayText.includes(p)) ||
                     allProducts.find(p => p.includes(displayText.slice(0,4)));
     if (matched) {
       refImage = await fetchRefImage(matched);
       if (refImage) stEl.textContent = `找到「${matched}」的参考图，生成中…`;
     }
+    // If also wants copywriting, generate text first then image
+    const alsoWantsCopy = mode !== 'img' && displayText.length > 10;
+    if (alsoWantsCopy) {
+      // Generate copy first
+      const copyPrompt = displayText.replace(/，?(生成图片|帮我配图|生成配图|来张图|出一张图|生成一张图?|配一张图|要图片|生成产品图)/g, '');
+      const copyParts = [{ text: `${MODE_PROMPTS[mode]}
+
+用户需求：${copyPrompt}` }];
+      addMsg('ai', '', true);
+      stEl.textContent = '正在生成文案…';
+      try {
+        const copyRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getKey()}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: SYS }] },
+            contents: [{ role: 'user', parts: copyParts }],
+            generationConfig: { maxOutputTokens: 8000, temperature: 1, thinkingConfig: { thinkingBudget: 2048 } }
+          })
+        });
+        const copyData = await copyRes.json();
+        rmTyping();
+        const copyReply = copyData.candidates?.[0]?.content?.parts?.map(p => p.text).join('') || '';
+        if (copyReply) {
+          addMsg('ai', copyReply);
+          hist.push({ role: 'assistant', content: copyReply });
+          saveSession(displayText, copyReply);
+        }
+      } catch(e) { rmTyping(); }
+    }
+    stEl.textContent = '正在生成配图…';
     await generateImage(displayText, refImage);
     btnEl.disabled = false; inpEl.focus();
     return;
