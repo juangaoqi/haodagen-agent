@@ -334,11 +334,40 @@ function getGHConfig() {
 }
 
 async function fetchRefImage(productName) {
-  const {user, repo} = getGHConfig();
+  const {user, repo, token} = getGHConfig();
   if (!user || !repo) return null;
   const safeName = productName.replace(/[\/\\:*?"<>|]/g, '_');
-  const url = `https://raw.githubusercontent.com/${user}/${repo}/main/images/${safeName}.jpg`;
+
+  // Try to get list of all images for this product (productName, productName_1, _2, _3...)
   try {
+    const headers = token ? { Authorization: `token ${token}` } : {};
+    const listRes = await fetch(`https://api.github.com/repos/${user}/${repo}/contents/images`, { headers });
+    if (listRes.ok) {
+      const files = await listRes.json();
+      // Match all files for this product: exact name or name_N
+      const matched = files.filter(f => {
+        const n = f.name.replace(/\.jpg$/i, '');
+        return n === safeName || n.match(new RegExp(`^${safeName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}_\\d+$`));
+      });
+      if (matched.length > 0) {
+        // Pick a random one
+        const pick = matched[Math.floor(Math.random() * matched.length)];
+        const url = `https://raw.githubusercontent.com/${user}/${repo}/main/images/${pick.name}`;
+        const r = await fetch(url);
+        if (!r.ok) return null;
+        const blob = await r.blob();
+        return new Promise(res => {
+          const reader = new FileReader();
+          reader.onload = e => res({ data: e.target.result.split(',')[1], mimeType: blob.type || 'image/jpeg', fileName: pick.name });
+          reader.readAsDataURL(blob);
+        });
+      }
+    }
+  } catch {}
+
+  // Fallback: try direct URL
+  try {
+    const url = `https://raw.githubusercontent.com/${user}/${repo}/main/images/${safeName}.jpg`;
     const r = await fetch(url);
     if (!r.ok) return null;
     const blob = await r.blob();
