@@ -518,8 +518,56 @@ async function go() {
   const previewSrc = imgB64 ? document.getElementById('img-preview').src : null;
   addMsg('user', displayText, false, previewSrc);
 
-  const imgKeywords = ['生成图片', '帮我配图', '生成配图', '来张图', '出一张图', '生成一张', '配一张图', '要图片', '生成产品图'];
-  const wantsImage = mode === 'img' || imgKeywords.some(k => displayText.includes(k));
+  // AI-based intent detection: understand context to decide image vs copy
+  let wantsImage = mode === 'img';
+  let wantsCopy = true;
+
+  if (mode !== 'img') {
+    stEl.textContent = '理解你的需求中…';
+    try {
+      // Build context from recent conversation
+      const recentHist = hist.slice(-4).map(m => {
+        const text = Array.isArray(m.content) ? m.content.find(c => c.type === 'text')?.text || '' : m.content;
+        return `${m.role === 'user' ? '用户' : 'AI'}：${text.slice(0, 100)}`;
+      }).join('\n');
+
+      const intentRes = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getKey()}`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ role: 'user', parts: [{ text: `根据以下对话上下文，判断用户最新这句话的意图。
+
+对话历史：
+${recentHist}
+
+用户最新说：「${displayText}」
+
+请只回答以下格式，不要任何其他内容：
+INTENT: [IMAGE_ONLY 或 COPY_ONLY 或 BOTH]
+
+判断规则：
+- IMAGE_ONLY：用户明确要图片，或上文刚生成了图片且用户在要求修改图片（如"再来一张""海苔少一点""换个角度""重新生成"）
+- COPY_ONLY：用户要写文案、笔记、脚本等文字内容
+- BOTH：用户同时要文案和图片` }] }],
+            generationConfig: { maxOutputTokens: 20, temperature: 0 }
+          })
+        }
+      );
+      if (intentRes.ok) {
+        const intentData = await intentRes.json();
+        const intentText = intentData.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
+        if (intentText.includes('IMAGE_ONLY')) { wantsImage = true; wantsCopy = false; }
+        else if (intentText.includes('BOTH')) { wantsImage = true; wantsCopy = true; }
+        else { wantsImage = false; wantsCopy = true; }
+      }
+    } catch(e) {
+      // fallback to keyword detection
+      const imgKeywords = ['生成图片', '帮我配图', '生成配图', '来张图', '出一张图', '生成一张', '配一张图', '要图片', '生成产品图', '重新生成', '再来一张', '换一张', '改一下图'];
+      wantsImage = imgKeywords.some(k => displayText.includes(k));
+      wantsCopy = !wantsImage;
+    }
+    stEl.textContent = '';
+  }
 
   if (wantsImage) {
     stEl.textContent = '正在图库中查找参考图…';
@@ -528,8 +576,7 @@ async function go() {
     matchedProduct = allProducts.find(p => displayText.includes(p)) || allProducts.find(p => p.includes(displayText.slice(0,4)));
     if (matchedProduct) refImage = await fetchRefImage(matchedProduct);
 
-    const alsoWantsCopy = mode !== 'img' && displayText.length > 10;
-    if (alsoWantsCopy) {
+    if (wantsCopy) {
       const copyPrompt = displayText.replace(/，?(生成图片|帮我配图|生成配图|来张图|出一张图|生成一张图?|配一张图|要图片|生成产品图)/g, '');
       addMsg('ai', '', true);
       stEl.textContent = '正在生成文案…';
