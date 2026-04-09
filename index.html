@@ -213,22 +213,23 @@ async function fetchWithRetry(url, options, maxRetries = 3) {
 }
 
 async function fetchRefImage(productName) {
-  const {user, repo, token} = getGHConfig();
+  const {user, repo} = getGHConfig();
   if (!user || !repo) return null;
   const safeName = productName.replace(/[\/\\:*?"<>|]/g, '_');
+
+  // Public repo: list images via API then fetch via raw URL
   try {
-    const headers = token ? { Authorization: `token ${token}` } : {};
-    const listRes = await fetch(`https://api.github.com/repos/${user}/${repo}/contents/images`, { headers });
+    const listRes = await fetch(`https://api.github.com/repos/${user}/${repo}/contents/images`);
     if (listRes.ok) {
       const files = await listRes.json();
+      const safeEscaped = safeName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const matched = files.filter(f => {
-        const n = f.name.replace(/\.jpg$/i, '');
-        return n === safeName || n.match(new RegExp(`^${safeName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}_\\d+$`));
+        const n = f.name.replace(/\.(jpg|jpeg|png|webp)$/i, '');
+        return n === safeName || n.match(new RegExp(`^${safeEscaped}_\\d+$`));
       });
       if (matched.length > 0) {
         const pick = matched[Math.floor(Math.random() * matched.length)];
-        const url = `https://raw.githubusercontent.com/${user}/${repo}/main/images/${pick.name}`;
-        const r = await fetch(url);
+        const r = await fetch(`https://raw.githubusercontent.com/${user}/${repo}/main/images/${pick.name}`);
         if (!r.ok) return null;
         const blob = await r.blob();
         return new Promise(res => {
@@ -239,10 +240,10 @@ async function fetchRefImage(productName) {
       }
     }
   } catch {}
+
+  // Fallback: try direct raw URL
   try {
-    const {user, repo} = getGHConfig();
-    const url = `https://raw.githubusercontent.com/${user}/${repo}/main/images/${safeName}.jpg`;
-    const r = await fetch(url);
+    const r = await fetch(`https://raw.githubusercontent.com/${user}/${repo}/main/images/${safeName}.jpg`);
     if (!r.ok) return null;
     const blob = await r.blob();
     return new Promise(res => {
