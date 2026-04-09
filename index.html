@@ -518,73 +518,34 @@ async function go() {
   const previewSrc = imgB64 ? document.getElementById('img-preview').src : null;
   addMsg('user', displayText, false, previewSrc);
 
-  // AI-based intent detection: understand context to decide image vs copy
+  // Smart intent detection: keyword fast path + context awareness
   let wantsImage = mode === 'img';
   let wantsCopy = true;
 
   if (mode !== 'img') {
-    stEl.textContent = '理解你的需求中…';
-    // Hard keyword check first (fast path)
-    const hardImgKeywords = ['生成图片', '帮我配图', '生成配图', '来张图', '出一张图', '生成一张图', '配一张图', '要图片', '生成产品图', '重新生成', '再来一张', '换一张'];
-    if (hardImgKeywords.some(k => displayText.includes(k))) {
+    const imgKeywords = ['生成图片','帮我配图','生成配图','来张图','出一张图','生成一张图','配一张图','要图片','生成产品图','重新生成','再来一张','换一张','改一下图','换个角度','换个背景','重新来','再生成'];
+    const copyKeywords = ['写','笔记','文案','脚本','标题','正文','朋友圈','抖音','小红书'];
+
+    const hasImgWord = imgKeywords.some(k => displayText.includes(k));
+    const hasCopyWord = copyKeywords.some(k => displayText.includes(k));
+
+    // Check if last AI message was an image (context awareness)
+    const lastMsgs = msgsEl.querySelectorAll('.msg:not(.u)');
+    const lastAiMsg = lastMsgs[lastMsgs.length - 1];
+    const lastWasImage = lastAiMsg && lastAiMsg.querySelector('img[style*="border-radius:10px"]');
+
+    if (hasImgWord && !hasCopyWord) {
       wantsImage = true; wantsCopy = false;
-      stEl.textContent = '';
-    } else {
-    try {
-      // Build context from recent conversation
-      const recentHist = hist.slice(-4).map(m => {
-        const text = Array.isArray(m.content) ? m.content.find(c => c.type === 'text')?.text || '' : m.content;
-        return `${m.role === 'user' ? '用户' : 'AI'}：${text.slice(0, 100)}`;
-      }).join('\n');
-
-      const intentRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getKey()}`,
-        { method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ role: 'user', parts: [{ text: `根据以下对话上下文，判断用户最新这句话的意图。
-
-对话历史：
-${recentHist}
-
-用户最新说：「${displayText}」
-
-只回答一行，格式严格如下，不要任何其他文字：
-INTENT: IMAGE_ONLY
-
-或
-
-INTENT: COPY_ONLY
-
-或
-
-INTENT: BOTH
-
-判断规则：
-- IMAGE_ONLY：用户说要"生成图片""生成一张图""来张图""再来一张""重新生成""换个角度""改一下图"，或上文刚生成了图片且用户在要求调整图片效果
-- COPY_ONLY：用户要写文案、笔记、脚本、标题、正文等文字内容
-- BOTH：用户同时要文案和图片
-
-注意：这是一个内容创作工具，完全可以生成图片，不要说"无法生成图片"，直接判断意图即可。` }] }],
-            generationConfig: { maxOutputTokens: 20, temperature: 0 }
-          })
-        }
-      );
-      if (intentRes.ok) {
-        const intentData = await intentRes.json();
-        const intentText = intentData.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
-        if (intentText.includes('IMAGE_ONLY')) { wantsImage = true; wantsCopy = false; }
-        else if (intentText.includes('BOTH')) { wantsImage = true; wantsCopy = true; }
-        else { wantsImage = false; wantsCopy = true; }
+    } else if (hasImgWord && hasCopyWord) {
+      wantsImage = true; wantsCopy = true;
+    } else if (lastWasImage && !hasCopyWord) {
+      // Last message was image, user is likely asking for image modification
+      const modifyWords = ['少一点','多一点','换','改','再','重','另','不要','加','去掉','更'];
+      if (modifyWords.some(k => displayText.includes(k))) {
+        wantsImage = true; wantsCopy = false;
       }
-    } catch(e) {
-      // fallback to keyword detection
-      const imgKeywords = ['生成图片', '帮我配图', '生成配图', '来张图', '出一张图', '生成一张', '配一张图', '要图片', '生成产品图', '重新生成', '再来一张', '换一张', '改一下图'];
-      wantsImage = imgKeywords.some(k => displayText.includes(k));
-      wantsCopy = !wantsImage;
     }
-    stEl.textContent = '';
   }
-    }
 
   if (wantsImage) {
     stEl.textContent = '正在图库中查找参考图…';
