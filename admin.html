@@ -367,47 +367,57 @@ async function loadLibrary() {
   } catch(e) { grid.innerHTML = `<p style="font-size:13px;color:#C0392B">${e.message}</p>`; }
 }
 
-async function renameImg(f, currentName, newCat, token, user, repo, item, label) {
-  // Build new filename: strip existing category tags, add new one
+async function renameImg(f, currentName, newCat, _t, _u, _r, item, label) {
   const baseName = currentName.replace(/_批发|_生品|_熟品/g, '');
-  const newName = baseName + (newCat ? '_' + newCat : '') + '.' + f.name.split('.').pop();
+  const ext = f.name.includes('.') ? f.name.split('.').pop() : 'jpg';
+  const newName = baseName + (newCat ? '_' + newCat : '') + '.' + ext;
 
   if (newName === f.name) { showToast('分类未变化'); return; }
 
-  const {user: u, repo: r, token: t} = getConfig();
+  const {user, repo, token} = getConfig();
+  if (!token) { showToast('请先配置 GitHub Token'); return; }
+
   item.style.opacity = '0.5';
   label.textContent = '重命名中…';
 
   try {
-    // Step 1: get current file content
-    const getRes = await fetch(`https://api.github.com/repos/${u}/${r}/contents/${f.path}`, {
-      headers: { Authorization: `token ${t}` }
+    // Use download_url to get image bytes (works for public repos without token)
+    const imgRes = await fetch(`https://raw.githubusercontent.com/${user}/${repo}/main/images/${f.name}`);
+    if (!imgRes.ok) throw new Error('读取图片失败');
+    const blob = await imgRes.blob();
+    const b64 = await new Promise(res => {
+      const reader = new FileReader();
+      reader.onload = e => res(e.target.result.split(',')[1]);
+      reader.readAsDataURL(blob);
     });
-    if (!getRes.ok) throw new Error('读取文件失败');
-    const fileData = await getRes.json();
 
-    // Step 2: upload with new name
-    const putRes = await fetch(`https://api.github.com/repos/${u}/${r}/contents/images/${newName}`, {
+    // Upload with new name
+    const putRes = await fetch(`https://api.github.com/repos/${user}/${repo}/contents/images/${newName}`, {
       method: 'PUT',
-      headers: { Authorization: `token ${t}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: '重命名图片：' + currentName + ' → ' + newName, content: fileData.content.replace(/\n/g,'') })
+      headers: { Authorization: 'token ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: '重命名：' + f.name + ' → ' + newName, content: b64 })
     });
-    if (!putRes.ok) throw new Error('上传新文件失败');
+    if (!putRes.ok) { const e = await putRes.json(); throw new Error(e.message || '上传失败'); }
 
-    // Step 3: delete old file
-    const delRes = await fetch(`https://api.github.com/repos/${u}/${r}/contents/${f.path}`, {
-      method: 'DELETE',
-      headers: { Authorization: `token ${t}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: '删除旧文件：' + currentName, sha: fileData.sha })
+    // Delete old file (need sha)
+    const shaRes = await fetch(`https://api.github.com/repos/${user}/${repo}/contents/images/${f.name}`, {
+      headers: { Authorization: 'token ' + token }
     });
-    if (!delRes.ok) throw new Error('删除旧文件失败');
+    if (shaRes.ok) {
+      const shaData = await shaRes.json();
+      await fetch(`https://api.github.com/repos/${user}/${repo}/contents/images/${f.name}`, {
+        method: 'DELETE',
+        headers: { Authorization: 'token ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: '删除旧文件：' + f.name, sha: shaData.sha })
+      });
+    }
 
-    showToast('分类已更新：' + newName);
-    setTimeout(loadLibrary, 1000);
+    showToast('已更新：' + newName);
+    setTimeout(loadLibrary, 1200);
   } catch(e) {
     item.style.opacity = '1';
     label.textContent = currentName;
-    showToast('重命名失败：' + e.message);
+    showToast('失败：' + e.message);
   }
 }
 
