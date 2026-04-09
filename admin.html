@@ -322,14 +322,12 @@ async function loadLibrary() {
     imgs.forEach(f => {
       const name = f.name.replace(/\.(jpg|jpeg|png|webp)$/i, '');
       const item = document.createElement('div'); item.className = 'img-item';
-      // Use download_url from API response (includes auth if needed)
       const imgEl = document.createElement('img');
       imgEl.alt = name; imgEl.loading = 'lazy';
-      // Fetch image with token for private repos
-      fetch(f.url, { headers: { Authorization: `token ${token}` } })
-        .then(r => r.json())
-        .then(d => { imgEl.src = `data:image/jpeg;base64,${d.content.replace(/\n/g,'')}`; })
-        .catch(() => { imgEl.src = f.download_url || ''; });
+      imgEl.style.cssText = 'width:100%;aspect-ratio:1;object-fit:cover;display:block;background:#f0ece4;';
+      // Public repo: use raw URL directly, fast and simple
+      imgEl.src = `https://raw.githubusercontent.com/${user}/${repo}/main/images/${f.name}?t=${Date.now()}`;
+      imgEl.onerror = () => { imgEl.src = f.download_url || ''; };
       const label = document.createElement('div'); label.className = 'img-label'; label.title = name; label.textContent = name;
       const delBtn = document.createElement('button'); delBtn.className = 'img-del'; delBtn.title = '删除'; delBtn.textContent = '×';
       delBtn.onclick = () => deleteImg(f.path, f.sha, name);
