@@ -551,7 +551,10 @@ async function go() {
     stEl.textContent = '正在图库中查找参考图…';
     let refImage = null, matchedProduct = null;
     const allProducts = Object.keys(window._PRODUCT_LIST || {});
-    matchedProduct = allProducts.find(p => displayText.includes(p)) || allProducts.find(p => p.includes(displayText.slice(0,4)));
+    // Search in current message + recent conversation history for product name
+    const recentText = hist.slice(-6).map(m => Array.isArray(m.content) ? m.content.find(c=>c.type==='text')?.text||'' : m.content).join(' ');
+    const searchText = displayText + ' ' + recentText;
+    matchedProduct = allProducts.find(p => searchText.includes(p)) || allProducts.find(p => searchText.includes(p.replace('豪大根','').slice(0,4)));
     if (matchedProduct) refImage = await fetchRefImage(matchedProduct);
 
     if (wantsCopy) {
