@@ -212,46 +212,58 @@ async function fetchWithRetry(url, options, maxRetries = 3) {
   throw new Error('多次重试后仍失败，请稍后再试');
 }
 
-async function fetchRefImage(productName) {
+// Image category keywords
+const IMG_CATEGORIES = {
+  '批发': ['批发', '仓库', '整箱', '未拆包', '库存', '箱装'],
+  '生品': ['生品', '冻品', '生的', '冷冻', '未熟', '原料'],
+  '熟品': ['熟品', '熟的', '出餐', '炸好', '成品', '摆盘', '出锅']
+};
+
+function detectImgCategory(text) {
+  for (const [cat, keywords] of Object.entries(IMG_CATEGORIES)) {
+    if (keywords.some(k => text.includes(k))) return cat;
+  }
+  return null; // no specific category, pick any
+}
+
+async function fetchRefImage(productName, category) {
   const {user, repo} = getGHConfig();
   if (!user || !repo) return null;
   const safeName = productName.replace(/[\/\\:*?"<>|]/g, '_');
 
-  // Public repo: list images via API then fetch via raw URL
   try {
     const listRes = await fetch(`https://api.github.com/repos/${user}/${repo}/contents/images`);
     if (listRes.ok) {
       const files = await listRes.json();
       const safeEscaped = safeName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const matched = files.filter(f => {
+
+      // Match files for this product
+      let matched = files.filter(f => {
         const n = f.name.replace(/\.(jpg|jpeg|png|webp)$/i, '');
-        return n === safeName || n.match(new RegExp(`^${safeEscaped}_\\d+$`));
+        return n === safeName || n.startsWith(safeName + '_');
       });
-      if (matched.length > 0) {
-        const pick = matched[Math.floor(Math.random() * matched.length)];
-        const r = await fetch(`https://raw.githubusercontent.com/${user}/${repo}/main/images/${pick.name}`);
-        if (!r.ok) return null;
-        const blob = await r.blob();
-        return new Promise(res => {
-          const reader = new FileReader();
-          reader.onload = e => res({ data: e.target.result.split(',')[1], mimeType: blob.type || 'image/jpeg', fileName: pick.name });
-          reader.readAsDataURL(blob);
-        });
+
+      if (matched.length === 0) return null;
+
+      // If category specified, filter by category tag in filename
+      if (category) {
+        const catMatched = matched.filter(f => f.name.includes(`_${category}`));
+        if (catMatched.length > 0) matched = catMatched;
+        // else fall through and use any image for this product
       }
+
+      const pick = matched[Math.floor(Math.random() * matched.length)];
+      const r = await fetch(`https://raw.githubusercontent.com/${user}/${repo}/main/images/${pick.name}`);
+      if (!r.ok) return null;
+      const blob = await r.blob();
+      return new Promise(res => {
+        const reader = new FileReader();
+        reader.onload = e => res({ data: e.target.result.split(',')[1], mimeType: blob.type || 'image/jpeg', fileName: pick.name });
+        reader.readAsDataURL(blob);
+      });
     }
   } catch {}
-
-  // Fallback: try direct raw URL
-  try {
-    const r = await fetch(`https://raw.githubusercontent.com/${user}/${repo}/main/images/${safeName}.jpg`);
-    if (!r.ok) return null;
-    const blob = await r.blob();
-    return new Promise(res => {
-      const reader = new FileReader();
-      reader.onload = e => res({ data: e.target.result.split(',')[1], mimeType: blob.type || 'image/jpeg' });
-      reader.readAsDataURL(blob);
-    });
-  } catch { return null; }
+  return null;
 }
 
 let mode = 'xhs';
@@ -445,9 +457,10 @@ async function generateImage(prompt, refImage, productName) {
   const key = getKey();
   if (!key) { addMsg('ai', '请先填入 Gemini API Key'); return; }
   addMsg('ai', '', true);
+  const catLabel = refImage?.fileName?.includes('_批发') ? '批发图' : refImage?.fileName?.includes('_生品') ? '生品图' : refImage?.fileName?.includes('_熟品') ? '熟品图' : '参考图';
   stEl.textContent = refImage
-    ? `已找到「${productName}」参考图，AI 正在仿照风格生成（约20秒）…`
-    : `图库中暂无此产品图片，AI 正在根据产品名称生成（约20秒）…`;
+    ? `已找到「${productName}」${catLabel}，AI 正在仿照风格生成（约20秒）…`
+    : `图库中暂无此产品图片，AI 正在根据描述自由生成（约20秒）…`;
 
   try {
     const parts = [];
@@ -555,7 +568,8 @@ async function go() {
     const recentText = hist.slice(-6).map(m => Array.isArray(m.content) ? m.content.find(c=>c.type==='text')?.text||'' : m.content).join(' ');
     const searchText = displayText + ' ' + recentText;
     matchedProduct = allProducts.find(p => searchText.includes(p)) || allProducts.find(p => searchText.includes(p.replace('豪大根','').slice(0,4)));
-    if (matchedProduct) refImage = await fetchRefImage(matchedProduct);
+    const imgCategory = detectImgCategory(searchText);
+    if (matchedProduct) refImage = await fetchRefImage(matchedProduct, imgCategory);
 
     if (wantsCopy) {
       const copyPrompt = displayText.replace(/，?(生成图片|帮我配图|生成配图|来张图|出一张图|生成一张图?|配一张图|要图片|生成产品图)/g, '');
