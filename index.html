@@ -524,6 +524,12 @@ async function go() {
 
   if (mode !== 'img') {
     stEl.textContent = '理解你的需求中…';
+    // Hard keyword check first (fast path)
+    const hardImgKeywords = ['生成图片', '帮我配图', '生成配图', '来张图', '出一张图', '生成一张图', '配一张图', '要图片', '生成产品图', '重新生成', '再来一张', '换一张'];
+    if (hardImgKeywords.some(k => displayText.includes(k))) {
+      wantsImage = true; wantsCopy = false;
+      stEl.textContent = '';
+    } else {
     try {
       // Build context from recent conversation
       const recentHist = hist.slice(-4).map(m => {
@@ -542,13 +548,23 @@ ${recentHist}
 
 用户最新说：「${displayText}」
 
-请只回答以下格式，不要任何其他内容：
-INTENT: [IMAGE_ONLY 或 COPY_ONLY 或 BOTH]
+只回答一行，格式严格如下，不要任何其他文字：
+INTENT: IMAGE_ONLY
+
+或
+
+INTENT: COPY_ONLY
+
+或
+
+INTENT: BOTH
 
 判断规则：
-- IMAGE_ONLY：用户明确要图片，或上文刚生成了图片且用户在要求修改图片（如"再来一张""海苔少一点""换个角度""重新生成"）
-- COPY_ONLY：用户要写文案、笔记、脚本等文字内容
-- BOTH：用户同时要文案和图片` }] }],
+- IMAGE_ONLY：用户说要"生成图片""生成一张图""来张图""再来一张""重新生成""换个角度""改一下图"，或上文刚生成了图片且用户在要求调整图片效果
+- COPY_ONLY：用户要写文案、笔记、脚本、标题、正文等文字内容
+- BOTH：用户同时要文案和图片
+
+注意：这是一个内容创作工具，完全可以生成图片，不要说"无法生成图片"，直接判断意图即可。` }] }],
             generationConfig: { maxOutputTokens: 20, temperature: 0 }
           })
         }
@@ -568,6 +584,7 @@ INTENT: [IMAGE_ONLY 或 COPY_ONLY 或 BOTH]
     }
     stEl.textContent = '';
   }
+    }
 
   if (wantsImage) {
     stEl.textContent = '正在图库中查找参考图…';
