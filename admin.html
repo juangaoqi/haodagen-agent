@@ -391,26 +391,28 @@ async function renameImg(f, currentName, newCat, _t, _u, _r, item, label) {
       reader.readAsDataURL(blob);
     });
 
-    // Upload with new name
+    // Step 1: get sha of old file first
+    const shaRes = await fetch(`https://api.github.com/repos/${user}/${repo}/contents/images/${f.name}`, {
+      headers: { Authorization: 'token ' + token }
+    });
+    if (!shaRes.ok) throw new Error('获取文件信息失败');
+    const shaData = await shaRes.json();
+    const oldSha = shaData.sha;
+
+    // Step 2: upload with new name
     const putRes = await fetch(`https://api.github.com/repos/${user}/${repo}/contents/images/${newName}`, {
       method: 'PUT',
       headers: { Authorization: 'token ' + token, 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: '重命名：' + f.name + ' → ' + newName, content: b64 })
     });
-    if (!putRes.ok) { const e = await putRes.json(); throw new Error(e.message || '上传失败'); }
+    if (!putRes.ok) { const e = await putRes.json(); throw new Error(e.message || '上传新文件失败'); }
 
-    // Delete old file (need sha)
-    const shaRes = await fetch(`https://api.github.com/repos/${user}/${repo}/contents/images/${f.name}`, {
-      headers: { Authorization: 'token ' + token }
+    // Step 3: delete old file using sha
+    await fetch(`https://api.github.com/repos/${user}/${repo}/contents/images/${f.name}`, {
+      method: 'DELETE',
+      headers: { Authorization: 'token ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: '删除旧文件：' + f.name, sha: oldSha })
     });
-    if (shaRes.ok) {
-      const shaData = await shaRes.json();
-      await fetch(`https://api.github.com/repos/${user}/${repo}/contents/images/${f.name}`, {
-        method: 'DELETE',
-        headers: { Authorization: 'token ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: '删除旧文件：' + f.name, sha: shaData.sha })
-      });
-    }
 
     showToast('已更新：' + newName);
     setTimeout(loadLibrary, 1200);
