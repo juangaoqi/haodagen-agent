@@ -466,9 +466,9 @@ async function generateImage(prompt, refImage, productName) {
     const parts = [];
     if (refImage) {
       parts.push({ inlineData: { mimeType: refImage.mimeType, data: refImage.data } });
-      parts.push({ text: `请参考这张图片的风格、光线、构图和色调，生成一张相似但不完全相同的新产品图。要求：${prompt}。保持食品摄影的专业感，画面有食欲感，创意要有变化，不要完全复制原图。图片中不要出现任何文字、标签、logo或水印。` });
+      parts.push({ text: `参考图中的产品外观、形状、颜色必须完全保留，不能改变产品本身。只改变以下内容：背景场景（如木板/大理石/餐厅桌面/白底）、拍摄角度（俯拍/侧拍/斜45度）、摆盘方式、光线氛围。要求：${prompt}。专业食品摄影质感，画面有食欲感。图片中不要出现任何文字、标签、logo或水印。` });
     } else {
-      parts.push({ text: `生成一张专业食品摄影风格的产品图，产品是：${prompt}。要求：温暖自然光线，干净简洁背景（木板或大理石），画面有食欲感，摆盘精致，专业摄影质感，色调暖橙系。图片中不要出现任何文字、标签、logo或水印，只有食物本身。` });
+      parts.push({ text: `生成一张专业食品摄影风格的产品图，产品是：${prompt}。严格还原产品真实外观，不要改变产品形状和颜色。背景选择干净的木板或大理石，温暖自然光线，摆盘精致，俯拍或斜45度角，专业摄影质感。图片中不要出现任何文字、标签、logo或水印。` });
     }
 
     const res = await fetchWithRetry(
