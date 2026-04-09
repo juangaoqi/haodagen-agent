@@ -82,6 +82,15 @@ h1{font-size:18px;font-weight:500;color:var(--text-1);margin-bottom:4px}
         <option value="">-- 选择对应产品 --</option>
       </select>
     </div>
+    <div class="field" style="margin-bottom:10px">
+      <label>图片类型</label>
+      <select id="img-category">
+        <option value="">不分类（通用图）</option>
+        <option value="批发">批发图（仓库/整箱/未拆包）</option>
+        <option value="生品">生品图（冻品状态）</option>
+        <option value="熟品">熟品图（炸好出餐）</option>
+      </select>
+    </div>
     <div class="upload-area" id="upload-area" onclick="document.getElementById('file-input').click()"
       ondragover="event.preventDefault();this.classList.add('drag')"
       ondragleave="this.classList.remove('drag')"
@@ -259,15 +268,17 @@ async function uploadImages() {
   const status = document.getElementById('upload-status');
   btn.disabled = true;
 
+  const category = document.getElementById('img-category').value;
   const safeName = product.replace(/[\/\\:*?"<>|]/g, '_');
+  const catSuffix = category ? '_' + category : '';
   let successCount = 0;
   let failCount = 0;
 
   for (let i = 0; i < fileQueue.length; i++) {
     const file = fileQueue[i];
     // If multiple files, add index suffix
-    const suffix = fileQueue.length > 1 ? `_${i + 1}` : '';
-    const path = `images/${safeName}${suffix}.jpg`;
+    const numSuffix = fileQueue.length > 1 ? '_' + (i + 1) : '';
+    const path = 'images/' + safeName + catSuffix + numSuffix + '.jpg';
     status.textContent = `上传中 ${i + 1}/${fileQueue.length}…`;
 
     try {
@@ -277,7 +288,7 @@ async function uploadImages() {
       });
       if (check.ok) { const d = await check.json(); sha = d.sha; }
 
-      const body = { message: `上传图片：${product}${suffix}`, content: file.data };
+      const body = { message: '上传图片：' + product + catSuffix + numSuffix, content: file.data };
       if (sha) body.sha = sha;
 
       const r = await fetch(`https://api.github.com/repos/${user}/${repo}/contents/${path}`, {
