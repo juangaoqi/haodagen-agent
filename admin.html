@@ -40,6 +40,10 @@ h1{font-size:18px;font-weight:500;color:var(--text-1);margin-bottom:4px}
 .row{display:flex;gap:10px;align-items:flex-end}
 .row .field{flex:1;margin-bottom:0}
 .count-badge{display:inline-block;padding:2px 10px;border-radius:20px;background:var(--accent-light);color:var(--accent);font-size:12px;font-weight:500;margin-left:8px}
+.img-cat-bar{padding:4px 6px;border-top:1px solid var(--border);display:flex;align-items:center;gap:4px;}
+.img-cat-bar select{flex:1;border:none;background:transparent;font-size:11px;color:var(--text-2);font-family:'DM Sans',sans-serif;outline:none;cursor:pointer;}
+.img-cat-bar button{font-size:11px;padding:2px 8px;border-radius:4px;border:1px solid var(--border);background:var(--accent-light);color:var(--accent);cursor:pointer;white-space:nowrap;}
+.img-cat-bar button:hover{background:var(--accent);color:#fff;}
 </style>
 </head>
 <body>
@@ -339,13 +343,72 @@ async function loadLibrary() {
       // Public repo: use raw URL directly, fast and simple
       imgEl.src = `https://raw.githubusercontent.com/${user}/${repo}/main/images/${f.name}?t=${Date.now()}`;
       imgEl.onerror = () => { imgEl.src = f.download_url || ''; };
+
+      // Detect current category from filename
+      const curCat = name.includes('_批发') ? '批发' : name.includes('_生品') ? '生品' : name.includes('_熟品') ? '熟品' : '';
+
       const label = document.createElement('div'); label.className = 'img-label'; label.title = name; label.textContent = name;
+
+      // Category rename bar
+      const catBar = document.createElement('div'); catBar.className = 'img-cat-bar';
+      const catSel = document.createElement('select');
+      catSel.innerHTML = '<option value="">通用图</option><option value="批发">批发图</option><option value="生品">生品图</option><option value="熟品">熟品图</option>';
+      catSel.value = curCat;
+      const catBtn = document.createElement('button');
+      catBtn.textContent = '保存分类';
+      catBtn.onclick = () => renameImg(f, name, catSel.value, token, user, repo, item, label);
+      catBar.appendChild(catSel); catBar.appendChild(catBtn);
+
       const delBtn = document.createElement('button'); delBtn.className = 'img-del'; delBtn.title = '删除'; delBtn.textContent = '×';
       delBtn.onclick = () => deleteImg(f.path, f.sha, name);
-      item.appendChild(imgEl); item.appendChild(label); item.appendChild(delBtn);
+      item.appendChild(imgEl); item.appendChild(label); item.appendChild(catBar); item.appendChild(delBtn);
       grid.appendChild(item);
     });
   } catch(e) { grid.innerHTML = `<p style="font-size:13px;color:#C0392B">${e.message}</p>`; }
+}
+
+async function renameImg(f, currentName, newCat, token, user, repo, item, label) {
+  // Build new filename: strip existing category tags, add new one
+  const baseName = currentName.replace(/_批发|_生品|_熟品/g, '');
+  const newName = baseName + (newCat ? '_' + newCat : '') + '.' + f.name.split('.').pop();
+
+  if (newName === f.name) { showToast('分类未变化'); return; }
+
+  const {user: u, repo: r, token: t} = getConfig();
+  item.style.opacity = '0.5';
+  label.textContent = '重命名中…';
+
+  try {
+    // Step 1: get current file content
+    const getRes = await fetch(`https://api.github.com/repos/${u}/${r}/contents/${f.path}`, {
+      headers: { Authorization: `token ${t}` }
+    });
+    if (!getRes.ok) throw new Error('读取文件失败');
+    const fileData = await getRes.json();
+
+    // Step 2: upload with new name
+    const putRes = await fetch(`https://api.github.com/repos/${u}/${r}/contents/images/${newName}`, {
+      method: 'PUT',
+      headers: { Authorization: `token ${t}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: '重命名图片：' + currentName + ' → ' + newName, content: fileData.content.replace(/\n/g,'') })
+    });
+    if (!putRes.ok) throw new Error('上传新文件失败');
+
+    // Step 3: delete old file
+    const delRes = await fetch(`https://api.github.com/repos/${u}/${r}/contents/${f.path}`, {
+      method: 'DELETE',
+      headers: { Authorization: `token ${t}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: '删除旧文件：' + currentName, sha: fileData.sha })
+    });
+    if (!delRes.ok) throw new Error('删除旧文件失败');
+
+    showToast('分类已更新：' + newName);
+    setTimeout(loadLibrary, 1000);
+  } catch(e) {
+    item.style.opacity = '1';
+    label.textContent = currentName;
+    showToast('重命名失败：' + e.message);
+  }
 }
 
 async function deleteImg(path, sha, name) {
