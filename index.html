@@ -477,7 +477,11 @@ async function generateImage(prompt, refImage, productName) {
     const parts = [];
     if (refImage) {
       parts.push({ inlineData: { mimeType: refImage.mimeType, data: refImage.data } });
-      parts.push({ text: `你必须严格参考这张图片，保留以下所有内容不变：
+      const isEditingLastImg = productName === '上一张图';
+      if (isEditingLastImg) {
+        parts.push({ text: `这是需要修改的图片。请在这张图片基础上进行局部修改，严格保留产品本身不变。用户的修改要求：${prompt}。只修改用户指定的部分，其他所有内容保持原样。图片中不要出现任何文字、标签、logo或水印。` });
+      } else {
+        parts.push({ text: `你必须严格参考这张图片，保留以下所有内容不变：
 1. 产品状态：如果参考图是带包装的冻品/批发状态，生成图也必须是带包装的批发状态；如果是熟品出餐状态，就保持熟品状态
 2. 产品数量：参考图有多少个产品，生成图也要有相似数量
 3. 产品外观、形状、颜色完全保留
@@ -486,6 +490,7 @@ async function generateImage(prompt, refImage, productName) {
 
 用户要求：${prompt}
 图片中不要出现任何文字、标签、logo或水印。` });
+      }
     } else {
       parts.push({ text: `生成一张专业食品摄影风格的产品图，产品是：${prompt}。严格还原产品真实外观，不要改变产品形状和颜色。背景选择干净的木板或大理石，温暖自然光线，摆盘精致，俯拍或斜45度角，专业摄影质感。图片中不要出现任何文字、标签、logo或水印。` });
     }
@@ -519,16 +524,25 @@ async function generateImage(prompt, refImage, productName) {
       if (textPart && textPart.text && !textPart.text.startsWith('[Image')) {
         const p = document.createElement('p'); p.textContent = textPart.text; bbl.appendChild(p);
       }
+      const imgSrc = `data:${imgPart.inlineData.mimeType};base64,${imgPart.inlineData.data}`;
       const img = document.createElement('img');
-      img.src = `data:${imgPart.inlineData.mimeType};base64,${imgPart.inlineData.data}`;
+      img.src = imgSrc;
       img.style.cssText = 'max-width:100%;border-radius:10px;margin-top:8px;display:block;';
       const dl = document.createElement('a');
-      dl.href = img.src; dl.download = 'haodagen-image.png';
+      dl.href = imgSrc; dl.download = 'haodagen-image.png';
       dl.style.cssText = 'display:inline-block;margin-top:8px;font-size:12px;color:var(--accent);';
       dl.textContent = '⬇️ 下载图片';
       bbl.appendChild(img); bbl.appendChild(dl);
       wrap.appendChild(av); wrap.appendChild(bbl);
       msgsEl.appendChild(wrap); msgsEl.scrollTop = msgsEl.scrollHeight;
+
+      // Store generated image in hist for context-aware editing
+      window._lastGeneratedImg = { data: imgPart.inlineData.data, mimeType: imgPart.inlineData.mimeType };
+      hist.push({ role: 'assistant', content: [
+        { type: 'text', text: '已生成产品图片' },
+        { type: 'image', source: { type: 'base64', media_type: imgPart.inlineData.mimeType, data: imgPart.inlineData.data } }
+      ]});
+      saveSession(prompt, '已生成产品图片');
     } else {
       addMsg('ai', '图片生成失败，请重试');
     }
@@ -555,27 +569,57 @@ async function go() {
   let wantsCopy = true;
 
   if (mode !== 'img') {
-    const imgKeywords = ['生成图片','帮我配图','生成配图','来张图','出一张图','生成一张图','配一张图','要图片','生成产品图','重新生成','再来一张','换一张','改一下图','换个角度','换个背景','重新来','再生成'];
+    const hardImgWords = ['生成图片','帮我配图','生成配图','来张图','出一张图','生成一张图','配一张图','要图片','生成产品图','重新生成','再来一张'];
     const copyKeywords = ['写','笔记','文案','脚本','标题','正文','朋友圈','抖音','小红书'];
-
-    const hasImgWord = imgKeywords.some(k => displayText.includes(k));
+    const hasHardImg = hardImgWords.some(k => displayText.includes(k));
     const hasCopyWord = copyKeywords.some(k => displayText.includes(k));
 
-    // Check if last AI message was an image (context awareness)
-    const lastMsgs = msgsEl.querySelectorAll('.msg:not(.u)');
-    const lastAiMsg = lastMsgs[lastMsgs.length - 1];
-    const lastWasImage = lastAiMsg && lastAiMsg.querySelector('img[style*="border-radius:10px"]');
+    const lastHistMsg = hist[hist.length - 1];
+    const lastWasImg = lastHistMsg?.role === 'assistant' && Array.isArray(lastHistMsg?.content) && lastHistMsg.content.some(c => c.type === 'image');
+    const lastWasCopy = lastHistMsg?.role === 'assistant' && (typeof lastHistMsg?.content === 'string');
 
-    if (hasImgWord && !hasCopyWord) {
+    if (hasHardImg && !hasCopyWord) {
       wantsImage = true; wantsCopy = false;
-    } else if (hasImgWord && hasCopyWord) {
+    } else if (hasHardImg && hasCopyWord) {
       wantsImage = true; wantsCopy = true;
-    } else if (lastWasImage && !hasCopyWord) {
-      // Last message was image, user is likely asking for image modification
-      const modifyWords = ['少一点','多一点','换','改','再','重','另','不要','加','去掉','更'];
-      if (modifyWords.some(k => displayText.includes(k))) {
-        wantsImage = true; wantsCopy = false;
-      }
+    } else if (hasCopyWord && !hasHardImg) {
+      wantsImage = false; wantsCopy = true;
+    } else {
+      // Ambiguous - use AI intent detection
+      stEl.textContent = '理解你的需求中…';
+      try {
+        const lastCtx = lastWasImg ? '上一条是AI生成的产品图片' : lastWasCopy ? '上一条是AI生成的文案' : '新对话';
+        const intentRes = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getKey()}`,
+          { method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ role: 'user', parts: [{ text: `判断用户意图，只输出一个单词。
+
+上下文：${lastCtx}
+用户说：「${displayText}」
+
+规则：
+- 修改/调整图片（换背景、改颜色、换场景、换角度、仓库背景等）→ IMAGE
+- 修改/调整文案（改标题、改正文、换角度重写等）→ COPY
+- 生成新图片 → IMAGE
+- 生成新文案 → COPY
+- 同时要图片和文案 → BOTH
+- 不确定 → COPY
+
+只输出：IMAGE 或 COPY 或 BOTH` }] }],
+              generationConfig: { maxOutputTokens: 5, temperature: 0 }
+            })
+          }
+        );
+        if (intentRes.ok) {
+          const d = await intentRes.json();
+          const r = (d.candidates?.[0]?.content?.parts?.[0]?.text || '').trim().toUpperCase();
+          if (r.includes('IMAGE')) { wantsImage = true; wantsCopy = false; }
+          else if (r.includes('BOTH')) { wantsImage = true; wantsCopy = true; }
+          else { wantsImage = false; wantsCopy = true; }
+        }
+      } catch { wantsImage = false; wantsCopy = true; }
+      stEl.textContent = '';
     }
   }
 
@@ -610,7 +654,12 @@ async function go() {
     }
 
     stEl.textContent = '正在生成配图…';
-    await generateImage(displayText, refImage, matchedProduct || displayText.slice(0, 10));
+    // If user is editing last generated image, use it as reference instead of library image
+    const editWords = ['改','换','去掉','加','调','修改','重新','再来','少一点','多一点','背景','角度'];
+    const isEditing = !wantsCopy && window._lastGeneratedImg && editWords.some(k => displayText.includes(k)) && !hardImgKeywords.some(k => displayText.includes(k));
+    const finalRefImage = isEditing ? window._lastGeneratedImg : refImage;
+    const finalProductName = isEditing ? '上一张图' : (matchedProduct || displayText.slice(0, 10));
+    await generateImage(displayText, finalRefImage, finalProductName);
     btnEl.disabled = false; inpEl.focus();
     return;
   }
