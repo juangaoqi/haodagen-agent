@@ -530,9 +530,21 @@ async function generateImage(prompt, refImage, productName) {
       img.style.cssText = 'max-width:100%;border-radius:10px;margin-top:8px;display:block;';
       const dl = document.createElement('a');
       dl.href = imgSrc; dl.download = 'haodagen-image.png';
-      dl.style.cssText = 'display:inline-block;margin-top:8px;font-size:12px;color:var(--accent);';
+      dl.style.cssText = 'display:inline-block;margin-top:8px;font-size:12px;color:var(--accent);margin-right:12px;';
       dl.textContent = '⬇️ 下载图片';
-      bbl.appendChild(img); bbl.appendChild(dl);
+
+      // Edit button - sets edit mode for this image
+      const editBtn = document.createElement('button');
+      editBtn.textContent = '✏️ 修改这张图';
+      editBtn.style.cssText = 'display:inline-block;margin-top:8px;font-size:12px;color:#fff;background:var(--accent);border:none;border-radius:6px;padding:4px 10px;cursor:pointer;';
+      editBtn.onclick = () => {
+        window._editingImg = { data: imgPart.inlineData.data, mimeType: imgPart.inlineData.mimeType };
+        inpEl.placeholder = '描述想修改的内容，如"换成仓库背景""去掉右边箱子"…';
+        inpEl.focus();
+        stEl.textContent = '✏️ 图片编辑模式 — 描述你想改什么';
+      };
+
+      bbl.appendChild(img); bbl.appendChild(dl); bbl.appendChild(editBtn);
       wrap.appendChild(av); wrap.appendChild(bbl);
       msgsEl.appendChild(wrap); msgsEl.scrollTop = msgsEl.scrollHeight;
 
@@ -559,6 +571,8 @@ async function go() {
   if ((!text && !imgB64) || btnEl.disabled) return;
   inpEl.value = '';
   btnEl.disabled = true;
+  // Reset placeholder if not in edit mode for this message
+  if (!window._editingImg) { inpEl.placeholder = '选好场景，告诉我要推哪款产品，或上传产品图…'; }
 
   const displayText = text || '（上传了产品图，请帮我写文案）';
   const previewSrc = imgB64 ? document.getElementById('img-preview').src : null;
@@ -655,10 +669,12 @@ async function go() {
 
     stEl.textContent = '正在生成配图…';
     // If user is editing last generated image, use it as reference instead of library image
-    const editWords = ['改','换','去掉','加','调','修改','重新','再来','少一点','多一点','背景','角度'];
-    const isEditing = !wantsCopy && window._lastGeneratedImg && editWords.some(k => displayText.includes(k)) && !hardImgKeywords.some(k => displayText.includes(k));
-    const finalRefImage = isEditing ? window._lastGeneratedImg : refImage;
+    // Check if user clicked "修改这张图" button
+    const isEditing = !!window._editingImg;
+    const finalRefImage = isEditing ? window._editingImg : refImage;
     const finalProductName = isEditing ? '上一张图' : (matchedProduct || displayText.slice(0, 10));
+    // Clear edit mode after use
+    if (isEditing) { window._editingImg = null; inpEl.placeholder = '选好场景，告诉我要推哪款产品，或上传产品图…'; stEl.textContent = ''; }
     await generateImage(displayText, finalRefImage, finalProductName);
     btnEl.disabled = false; inpEl.focus();
     return;
