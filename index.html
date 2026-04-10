@@ -235,13 +235,24 @@ async function fetchRefImage(productName, category) {
     const listRes = await fetch(`https://api.github.com/repos/${user}/${repo}/contents/images`);
     if (listRes.ok) {
       const files = await listRes.json();
-      const safeEscaped = safeName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-      // Match files for this product
+      // Match files for this product - try exact, then startsWith, then fuzzy
       let matched = files.filter(f => {
         const n = f.name.replace(/\.(jpg|jpeg|png|webp)$/i, '');
         return n === safeName || n.startsWith(safeName + '_');
       });
+
+      // Fuzzy match: try matching key parts of the product name
+      if (matched.length === 0) {
+        const keyParts = safeName.split(/[_\s]/).filter(p => p.length >= 2);
+        matched = files.filter(f => keyParts.every(part => f.name.includes(part)));
+      }
+
+      // Even fuzzier: match any file containing first 6 chars of product name
+      if (matched.length === 0 && safeName.length >= 4) {
+        const prefix = safeName.slice(0, 6);
+        matched = files.filter(f => f.name.includes(prefix));
+      }
 
       if (matched.length === 0) return null;
 
@@ -577,7 +588,9 @@ async function go() {
     const searchText = displayText + ' ' + recentText;
     matchedProduct = allProducts.find(p => searchText.includes(p)) || allProducts.find(p => searchText.includes(p.replace('豪大根','').slice(0,4)));
     const imgCategory = detectImgCategory(searchText);
-    if (matchedProduct) refImage = await fetchRefImage(matchedProduct, imgCategory);
+    // If no product matched from list, use the user's input directly to search image library
+    const searchTarget = matchedProduct || displayText.replace(/生成图片|帮我配图|生成配图|来张图|批发图类型|熟品类型|生品类型|批发类型/g,'').trim();
+    if (searchTarget) refImage = await fetchRefImage(searchTarget, imgCategory);
 
     if (wantsCopy) {
       const copyPrompt = displayText.replace(/，?(生成图片|帮我配图|生成配图|来张图|出一张图|生成一张图?|配一张图|要图片|生成产品图)/g, '');
