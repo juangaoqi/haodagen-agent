@@ -604,7 +604,33 @@ async function go() {
 
   const parts = [];
   if (imgB64) parts.push({ inlineData: { mimeType: imgMime, data: imgB64 } });
-  parts.push({ text: `${MODE_PROMPTS[mode]}\n\n用户需求：${displayText}` });
+
+  // Random angle injection - forces different perspective each time
+  const ANGLES = {
+    xhs: [
+      '本次从【利润空间】角度切入：重点突出批发价和客单价之间的利润差，让老板一眼看到赚钱空间',
+      '本次从【省事好操作】角度切入：重点突出操作简单、无需解冻、快速出餐，解决厨房人手问题',
+      '本次从【品质稳定】角度切入：重点突出工厂直供、冷链配送、品质如一，解决老板断货和品控焦虑',
+      '本次从【新品差异化】角度切入：重点突出产品独特性，帮老板打造差异化招牌菜',
+      '本次从【客户反馈】角度切入：用顾客喜欢这款产品的角度来说明市场验证，增强老板信心',
+      '本次从【零风险试用】角度切入：重点突出免费试样、先试后买，降低老板采购决策门槛',
+    ],
+    dy: [
+      '本次钩子用【数字冲击】：开头用具体价格或利润数字震撼观众',
+      '本次钩子用【反常识】：开头用一个出乎意料的事实吸引停留',
+      '本次钩子用【场景代入】：开头直接描述餐饮老板的某个真实痛苦场景',
+      '本次钩子用【悬念】：开头提出一个老板会好奇的问题',
+    ],
+    pyq: [
+      '本次用【算账款】风格：直接给老板列出进货成本和售价，算清楚每单利润',
+      '本次用【真实分享款】风格：像一个供应商朋友在推荐好货，有具体细节和数字',
+      '本次用【信任建立款】风格：强调供货稳定、冷链保障、免费试样，降低合作顾虑',
+    ]
+  };
+  const modeAngles = ANGLES[mode] || ANGLES.xhs;
+  const randomAngle = modeAngles[Math.floor(Math.random() * modeAngles.length)];
+
+  parts.push({ text: `${MODE_PROMPTS[mode]}\n\n【本次写作角度】${randomAngle}\n\n用户需求：${displayText}` });
   removeImg();
 
   const geminiContents = [];
