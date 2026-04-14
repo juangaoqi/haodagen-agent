@@ -179,7 +179,7 @@ const btnEl  = document.getElementById('send-btn');
 const stEl   = document.getElementById('status-bar');
 const histEl = document.getElementById('hist-list');
 
-const MODEL_TEXT  = 'gemini-2.5-flash';
+const MODEL_TEXT  = 'gemini-2.0-flash';
 const MODEL_IMAGE = 'gemini-2.5-flash-image';
 
 function getKey() { return localStorage.getItem('gkey') || ''; }
@@ -208,7 +208,7 @@ async function fetchWithRetry(url, options, maxRetries = 3) {
     const msg = errData.error?.message || '';
     const isOverload = msg.toLowerCase().includes('high demand') || res.status === 503 || res.status === 429;
     if (isOverload && i < maxRetries - 1) {
-      const wait = (i + 1) * 4000;
+      const wait = (i + 1) * 6000;
       stEl.textContent = `服务繁忙，${wait/1000}秒后自动重试（${i+1}/${maxRetries}）…`;
       await new Promise(r => setTimeout(r, wait)); continue;
     }
@@ -627,13 +627,11 @@ async function generateImage(prompt, refImage, productName) {
       wrap.appendChild(av); wrap.appendChild(bbl);
       msgsEl.appendChild(wrap); msgsEl.scrollTop = msgsEl.scrollHeight;
 
-      // Store generated image in hist for context-aware editing
+      // Store generated image in memory only (not localStorage - too large)
       window._lastGeneratedImg = { data: imgPart.inlineData.data, mimeType: imgPart.inlineData.mimeType };
-      hist.push({ role: 'assistant', content: [
-        { type: 'text', text: '已生成产品图片' },
-        { type: 'image', source: { type: 'base64', media_type: imgPart.inlineData.mimeType, data: imgPart.inlineData.data } }
-      ]});
-      saveSession(prompt, '已生成产品图片');
+      // Only store text marker in hist to avoid localStorage quota exceeded
+      hist.push({ role: 'assistant', content: '已生成产品图片' });
+      try { saveSession(prompt, '已生成产品图片'); } catch(e) { console.log('session save skipped'); }
     } else {
       addMsg('ai', '图片生成失败，请重试');
     }
