@@ -179,7 +179,8 @@ const btnEl  = document.getElementById('send-btn');
 const stEl   = document.getElementById('status-bar');
 const histEl = document.getElementById('hist-list');
 
-const MODEL_TEXT  = 'gemini-2.0-flash';
+const MODEL_TEXT = 'gemini-2.5-flash';
+const MODEL_INTENT = 'gemini-2.5-flash';
 const MODEL_IMAGE = 'gemini-2.5-flash-image';
 
 function getKey() { return localStorage.getItem('gkey') || ''; }
@@ -198,7 +199,7 @@ async function fetchWithRetry(url, options, maxRetries = 3) {
     catch(e) {
       if (i < maxRetries - 1) {
         const wait = (i + 1) * 3000;
-        stEl.textContent = `网络错误，${wait/1000}秒后自动重试（${i+1}/${maxRetries}）…`;
+        stEl.textContent = '网络错误，' + (wait / 1000) + '秒后自动重试（' + (i + 1) + '/' + maxRetries + '）…';
         await new Promise(r => setTimeout(r, wait)); continue;
       }
       throw e;
@@ -209,7 +210,7 @@ async function fetchWithRetry(url, options, maxRetries = 3) {
     const isOverload = msg.toLowerCase().includes('high demand') || res.status === 503 || res.status === 429;
     if (isOverload && i < maxRetries - 1) {
       const wait = (i + 1) * 6000;
-      stEl.textContent = `服务繁忙，${wait/1000}秒后自动重试（${i+1}/${maxRetries}）…`;
+      stEl.textContent = '服务繁忙，' + (wait / 1000) + '秒后自动重试（' + (i + 1) + '/' + maxRetries + '）…';
       await new Promise(r => setTimeout(r, wait)); continue;
     }
     throw new Error(msg || `请求失败 (${res.status})`);
@@ -217,7 +218,6 @@ async function fetchWithRetry(url, options, maxRetries = 3) {
   throw new Error('多次重试后仍失败，请稍后再试');
 }
 
-// Image category keywords
 const IMG_CATEGORIES = {
   '批发': ['批发', '仓库', '整箱', '未拆包', '库存', '箱装'],
   '生品': ['生品', '冻品', '生的', '冷冻', '未熟', '原料'],
@@ -228,7 +228,7 @@ function detectImgCategory(text) {
   for (const [cat, keywords] of Object.entries(IMG_CATEGORIES)) {
     if (keywords.some(k => text.includes(k))) return cat;
   }
-  return null; // no specific category, pick any
+  return null;
 }
 
 async function fetchRefImage(productName, category) {
@@ -241,19 +241,16 @@ async function fetchRefImage(productName, category) {
     if (listRes.ok) {
       const files = await listRes.json();
 
-      // Match files for this product - try exact, then startsWith, then fuzzy
       let matched = files.filter(f => {
         const n = f.name.replace(/\.(jpg|jpeg|png|webp)$/i, '');
         return n === safeName || n.startsWith(safeName + '_');
       });
 
-      // Fuzzy match: try matching key parts of the product name
       if (matched.length === 0) {
         const keyParts = safeName.split(/[_\s]/).filter(p => p.length >= 2);
         matched = files.filter(f => keyParts.every(part => f.name.includes(part)));
       }
 
-      // Even fuzzier: match any file containing first 6 chars of product name
       if (matched.length === 0 && safeName.length >= 4) {
         const prefix = safeName.slice(0, 6);
         matched = files.filter(f => f.name.includes(prefix));
@@ -261,11 +258,9 @@ async function fetchRefImage(productName, category) {
 
       if (matched.length === 0) return null;
 
-      // If category specified, filter by category tag in filename
       if (category) {
         const catMatched = matched.filter(f => f.name.includes(`_${category}`));
         if (catMatched.length > 0) matched = catMatched;
-        // else fall through and use any image for this product
       }
 
       const pick = matched[Math.floor(Math.random() * matched.length)];
@@ -469,7 +464,6 @@ function rmTyping() {
   if (t) { if (t._thinkInterval) clearInterval(t._thinkInterval); t.remove(); }
 }
 
-// Show image picker when multiple reference images available
 async function showImagePicker(files, category, prompt, productName) {
   return new Promise(resolve => {
     const wrap = document.createElement('div'); wrap.className = 'msg';
@@ -489,7 +483,6 @@ async function showImagePicker(files, category, prompt, productName) {
       img.title = f.name;
       img.onclick = async () => {
         wrap.remove();
-        // Load selected image
         const r = await fetch(img.src);
         const blob = await r.blob();
         const reader = new FileReader();
@@ -514,7 +507,6 @@ async function showImagePicker(files, category, prompt, productName) {
   });
 }
 
-// Get all matching images for a product and category
 async function getMatchingImages(productName, category) {
   const {user, repo} = getGHConfig();
   if (!user || !repo) return [];
@@ -612,7 +604,6 @@ async function generateImage(prompt, refImage, productName) {
       dl.style.cssText = 'display:inline-block;margin-top:8px;font-size:12px;color:var(--accent);margin-right:12px;';
       dl.textContent = '⬇️ 下载图片';
 
-      // Edit button - sets edit mode for this image
       const editBtn = document.createElement('button');
       editBtn.textContent = '✏️ 修改这张图';
       editBtn.style.cssText = 'display:inline-block;margin-top:8px;font-size:12px;color:#fff;background:var(--accent);border:none;border-radius:6px;padding:4px 10px;cursor:pointer;';
@@ -627,9 +618,7 @@ async function generateImage(prompt, refImage, productName) {
       wrap.appendChild(av); wrap.appendChild(bbl);
       msgsEl.appendChild(wrap); msgsEl.scrollTop = msgsEl.scrollHeight;
 
-      // Store generated image in memory only (not localStorage - too large)
       window._lastGeneratedImg = { data: imgPart.inlineData.data, mimeType: imgPart.inlineData.mimeType };
-      // Only store text marker in hist to avoid localStorage quota exceeded
       hist.push({ role: 'assistant', content: '已生成产品图片' });
       try { saveSession(prompt, '已生成产品图片'); } catch(e) { console.log('session save skipped'); }
     } else {
@@ -646,16 +635,22 @@ async function generateImage(prompt, refImage, productName) {
 async function go() {
   const text = inpEl.value.trim();
   if ((!text && !imgB64) || btnEl.disabled) return;
+
+  const apiKey = getKey();
+  if (!apiKey) {
+    addMsg('ai', '请先在左侧填入可用的 Gemini API Key，再继续生成文案或图片。');
+    inpEl.focus();
+    return;
+  }
+
   inpEl.value = '';
   btnEl.disabled = true;
-  // Reset placeholder if not in edit mode for this message
   if (!window._editingImg) { inpEl.placeholder = '选好场景，告诉我要推哪款产品，或上传产品图…'; }
 
   const displayText = text || '（上传了产品图，请帮我写文案）';
   const previewSrc = imgB64 ? document.getElementById('img-preview').src : null;
   addMsg('user', displayText, false, previewSrc);
 
-  // Smart intent detection: keyword fast path + context awareness
   let wantsImage = mode === 'img';
   let wantsCopy = true;
 
@@ -676,12 +671,11 @@ async function go() {
     } else if (hasCopyWord && !hasHardImg) {
       wantsImage = false; wantsCopy = true;
     } else {
-      // Ambiguous - use AI intent detection
       stEl.textContent = '理解你的需求中…';
       try {
         const lastCtx = lastWasImg ? '上一条是AI生成的产品图片' : lastWasCopy ? '上一条是AI生成的文案' : '新对话';
         const intentRes = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getKey()}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_INTENT}:generateContent?key=${apiKey}`,
           { method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               contents: [{ role: 'user', parts: [{ text: `判断用户意图，只输出一个单词。
@@ -716,7 +710,7 @@ async function go() {
 
   if (wantsImage) {
     stEl.textContent = '正在图库中查找参考图…';
-    let refImage = null, matchedProduct = null;
+    let matchedProduct = null;
     const allProducts = Object.keys(window._PRODUCT_LIST || {});
     const recentText = hist.slice(-6).map(m => Array.isArray(m.content) ? m.content.find(c=>c.type==='text')?.text||'' : m.content).join(' ');
     const searchText = displayText + ' ' + recentText;
@@ -760,7 +754,6 @@ async function go() {
   const parts = [];
   if (imgB64) parts.push({ inlineData: { mimeType: imgMime, data: imgB64 } });
 
-  // Random angle injection - forces different perspective each time
   const ANGLES = {
     xhs: [
       '本次从【利润空间】角度切入：重点突出批发价和客单价之间的利润差，让老板一眼看到赚钱空间',
@@ -808,9 +801,17 @@ async function go() {
 
   try {
     const res = await fetchWithRetry(
-      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_TEXT}:generateContent?key=${getKey()}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_TEXT}:generateContent?key=${apiKey}`,
       { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ systemInstruction: { parts: [{ text: getSYS() }] }, contents: [...geminiContents, { role: 'user', parts }], generationConfig: { maxOutputTokens: 8000, temperature: 1, thinkingConfig: { thinkingBudget: 2048 } } }) }
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: getSYS() }] },
+          contents: [...geminiContents, { role: 'user', parts }],
+          generationConfig: {
+            maxOutputTokens: 8000,
+            temperature: 1,
+            thinkingConfig: { thinkingBudget: 2048, includeThoughts: true }
+          }
+        }) }
     );
     const data = await res.json();
     rmTyping();
